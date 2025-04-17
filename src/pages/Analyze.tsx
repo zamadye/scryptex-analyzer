@@ -1,10 +1,14 @@
 
-import { useState } from "react";
-import { BarChart3, ExternalLink, AlertCircle, Check, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BarChart3, ExternalLink, AlertCircle, Check, ChevronRight, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/Input";
-import { Button } from "@/components/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card";
+import { Input } from "@/components/ui/inputui";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/cardui";
+import { FetcherButtons } from "@/components/analyze/FetcherButtons";
+import { FetcherOutput } from "@/components/analyze/FetcherOutput";
+import { useToast } from "@/hooks/use-toast";
+import { CreditManager } from "@/components/common/CreditPanel";
 import { 
   ResponsiveContainer, 
   PieChart, 
@@ -12,6 +16,8 @@ import {
   Cell,
   Tooltip
 } from "recharts";
+
+type FetcherType = "tokenomics" | "roadmap" | "backers" | "social" | "airdrop" | null;
 
 interface ProjectAnalysis {
   name: string;
@@ -22,35 +28,41 @@ interface ProjectAnalysis {
 }
 
 const Analyze = () => {
+  const { toast } = useToast();
   const [projectName, setProjectName] = useState("");
   const [projectWebsite, setProjectWebsite] = useState("");
   const [projectChain, setProjectChain] = useState("");
   const [projectTwitter, setProjectTwitter] = useState("");
+  
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ProjectAnalysis | null>(null);
+  const [activeFetcher, setActiveFetcher] = useState<FetcherType>(null);
+  const [isFetcherLoading, setIsFetcherLoading] = useState(false);
 
-  // Dummy data for demonstration
-  const dummyVcBackers = [
-    { name: "Paradigm", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
-    { name: "a16z", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
-    { name: "Binance Labs", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
-    { name: "Dragonfly", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
-  ];
-
-  const dummyTokenomics = [
-    { name: "Team", value: 15, color: "#3366FF" },
-    { name: "Investors", value: 20, color: "#66A1FF" },
-    { name: "Community", value: 40, color: "#99C5FF" },
-    { name: "Treasury", value: 10, color: "#CCE5FF" },
-    { name: "Advisors", value: 15, color: "#0047CC" },
-  ];
-
+  // Handle analyze button click
   const handleAnalyze = () => {
     if (!projectName || !projectWebsite || !projectChain) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields before analyzing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Try to use a credit
+    if (!CreditManager.useCredit(1)) {
+      toast({
+        title: "Insufficient Credits",
+        description: "You don't have enough credits to perform this action.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setActiveFetcher(null);
 
     // Simulate API call with setTimeout
     setTimeout(() => {
@@ -60,10 +72,26 @@ const Analyze = () => {
         description: 
           `${projectName} is a decentralized protocol built on ${projectChain} that enables seamless cross-chain liquidity for DeFi users. The protocol utilizes advanced algorithms and secure bridges to facilitate faster and cheaper transactions while maintaining high security standards. The team consists of experienced blockchain developers with backgrounds at major crypto projects.`,
         aiScore: Math.floor(Math.random() * 41) + 60, // Random score between 60-100
-        vcBackers: dummyVcBackers,
-        tokenomics: dummyTokenomics,
+        vcBackers: getDummyVcBackers(),
+        tokenomics: getDummyTokenomics(),
+      });
+      
+      toast({
+        title: "Analysis Complete",
+        description: `${projectName} has been successfully analyzed.`,
       });
     }, 2000);
+  };
+
+  // Handle fetcher button selection
+  const handleFetcherSelect = (fetcher: FetcherType) => {
+    setActiveFetcher(fetcher);
+    setIsFetcherLoading(true);
+    
+    // Simulate loading time
+    setTimeout(() => {
+      setIsFetcherLoading(false);
+    }, 1500);
   };
 
   const getScoreColor = (score: number) => {
@@ -81,7 +109,7 @@ const Analyze = () => {
         </p>
       </div>
 
-      <Card className="mb-10">
+      <Card className="mb-10 animate-in fade-in duration-300">
         <CardHeader>
           <CardTitle>Enter Project Details</CardTitle>
         </CardHeader>
@@ -126,16 +154,34 @@ const Analyze = () => {
               disabled={!projectName || !projectWebsite || !projectChain || isAnalyzing}
               className="bg-scryptex-blue hover:bg-scryptex-dark text-white px-8"
               size="lg"
-              isLoading={isAnalyzing}
             >
-              {isAnalyzing ? "Analyzing..." : "Analyze Project"}
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                "Analyze Project"
+              )}
             </Button>
           </div>
         </CardContent>
       </Card>
 
+      {isAnalyzing && (
+        <div className="flex justify-center items-center py-16 animate-in fade-in duration-300">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 text-scryptex-blue animate-spin mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Analyzing {projectName}...</h3>
+            <p className="text-gray-600">
+              Our AI is scanning on-chain data, social media, and other sources.
+            </p>
+          </div>
+        </div>
+      )}
+
       {analysisResult && (
-        <div className="space-y-8">
+        <div className="space-y-8 animate-in fade-in duration-500">
           <Card className="overflow-hidden">
             <CardHeader className="bg-gray-50">
               <div className="flex justify-between items-center">
@@ -217,6 +263,23 @@ const Analyze = () => {
             </CardContent>
           </Card>
           
+          {/* Fetcher Buttons Section */}
+          <div className="animate-in fade-in slide-in-from-bottom duration-300">
+            <h3 className="text-xl font-semibold mb-4">Explore More Details</h3>
+            <FetcherButtons 
+              onFetcherSelect={handleFetcherSelect}
+              activeFetcher={activeFetcher}
+              isLoading={isFetcherLoading}
+            />
+            
+            {/* Fetcher Output */}
+            <FetcherOutput 
+              type={activeFetcher}
+              onBack={() => setActiveFetcher(null)}
+              projectName={projectName}
+            />
+          </div>
+          
           <div className="flex justify-center">
             <Button className="bg-scryptex-blue hover:bg-scryptex-dark text-white">
               View Detailed Report
@@ -228,5 +291,25 @@ const Analyze = () => {
     </div>
   );
 };
+
+// Dummy data functions
+function getDummyVcBackers() {
+  return [
+    { name: "Paradigm", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
+    { name: "a16z", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
+    { name: "Binance Labs", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
+    { name: "Dragonfly", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.svg" },
+  ];
+}
+
+function getDummyTokenomics() {
+  return [
+    { name: "Team", value: 15, color: "#3366FF" },
+    { name: "Investors", value: 20, color: "#66A1FF" },
+    { name: "Community", value: 40, color: "#99C5FF" },
+    { name: "Treasury", value: 10, color: "#CCE5FF" },
+    { name: "Advisors", value: 15, color: "#0047CC" },
+  ];
+}
 
 export default Analyze;

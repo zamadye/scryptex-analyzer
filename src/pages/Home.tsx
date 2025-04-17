@@ -1,6 +1,8 @@
 
 import { ArrowRight, BarChart, Rocket, ActivitySquare, PieChart, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { StepFlowSection } from "@/components/home/StepFlowSection";
+import { TrendingChart } from "@/components/home/TrendingChart";
 
 const features = [
   {
@@ -39,7 +41,7 @@ const Home = () => {
   return (
     <div className="flex flex-col">
       {/* Hero section */}
-      <section className="py-20 px-4 sm:px-6 flex flex-col items-center text-center">
+      <section className="py-20 px-4 sm:px-6 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-5 duration-500">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 max-w-4xl mb-6">
           The Ultimate <span className="text-scryptex-blue">Crypto Research & Analysis</span> Platform
         </h1>
@@ -61,15 +63,21 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Step flow section */}
+      <StepFlowSection />
+      
+      {/* Trending chart section */}
+      <TrendingChart />
+
       {/* Features section */}
-      <section className="py-16 px-4 sm:px-6 bg-gray-50">
+      <section className="py-16 px-4 sm:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-16">
             All-in-One Crypto Research Platform
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Link to={feature.path} key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+              <Link to={feature.path} key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 animate-in fade-in duration-500" style={{ animationDelay: `${index * 100}ms` }}>
                 <div className="flex flex-col items-start">
                   <div className="mb-4">{feature.icon}</div>
                   <h3 className="text-xl font-semibold mb-2 text-gray-900">{feature.title}</h3>
