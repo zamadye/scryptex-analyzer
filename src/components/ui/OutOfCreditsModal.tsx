@@ -1,28 +1,22 @@
 
 import { X, CreditCard, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 interface OutOfCreditsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onTopUp: () => void;
+  onReferral: () => void;
 }
 
-export const OutOfCreditsModal = ({ isOpen, onClose }: OutOfCreditsModalProps) => {
-  const navigate = useNavigate();
-  
+export const OutOfCreditsModal = ({ 
+  isOpen, 
+  onClose,
+  onTopUp,
+  onReferral
+}: OutOfCreditsModalProps) => {
   if (!isOpen) return null;
   
-  const handleTopUp = () => {
-    navigate("/topup");
-    onClose();
-  };
-  
-  const handleReferral = () => {
-    navigate("/referral");
-    onClose();
-  };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-lg max-w-md w-full animate-in fade-in zoom-in duration-300">
@@ -45,7 +39,7 @@ export const OutOfCreditsModal = ({ isOpen, onClose }: OutOfCreditsModalProps) =
           
           <div className="space-y-3">
             <Button 
-              onClick={handleTopUp}
+              onClick={onTopUp}
               className="w-full bg-scryptex-blue hover:bg-scryptex-dark text-white py-3"
             >
               <CreditCard className="h-5 w-5 mr-2" />
@@ -53,7 +47,7 @@ export const OutOfCreditsModal = ({ isOpen, onClose }: OutOfCreditsModalProps) =
             </Button>
             
             <Button 
-              onClick={handleReferral}
+              onClick={onReferral}
               variant="outline" 
               className="w-full border-gray-300 py-3"
             >

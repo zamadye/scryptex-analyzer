@@ -115,37 +115,52 @@ const Analyze = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input 
-              label="Project Name" 
-              placeholder="e.g. Uniswap, Arbitrum" 
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              fullWidth
-              required
-            />
-            <Input 
-              label="Website" 
-              placeholder="e.g. https://uniswap.org" 
-              value={projectWebsite}
-              onChange={(e) => setProjectWebsite(e.target.value)}
-              fullWidth
-              required
-            />
-            <Input 
-              label="Blockchain" 
-              placeholder="e.g. Ethereum, Solana" 
-              value={projectChain}
-              onChange={(e) => setProjectChain(e.target.value)}
-              fullWidth
-              required
-            />
-            <Input 
-              label="Twitter (Optional)" 
-              placeholder="e.g. @Uniswap" 
-              value={projectTwitter}
-              onChange={(e) => setProjectTwitter(e.target.value)}
-              fullWidth
-            />
+            <div>
+              <label htmlFor="projectName" className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+              <Input 
+                id="projectName"
+                placeholder="e.g. Uniswap, Arbitrum" 
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="projectWebsite" className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+              <Input 
+                id="projectWebsite"
+                placeholder="e.g. https://uniswap.org" 
+                value={projectWebsite}
+                onChange={(e) => setProjectWebsite(e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="projectChain" className="block text-sm font-medium text-gray-700 mb-1">Blockchain</label>
+              <Input 
+                id="projectChain"
+                placeholder="e.g. Ethereum, Solana" 
+                value={projectChain}
+                onChange={(e) => setProjectChain(e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="projectTwitter" className="block text-sm font-medium text-gray-700 mb-1">Twitter (Optional)</label>
+              <Input 
+                id="projectTwitter"
+                placeholder="e.g. @Uniswap" 
+                value={projectTwitter}
+                onChange={(e) => setProjectTwitter(e.target.value)}
+                className="w-full"
+              />
+            </div>
           </div>
 
           <div className="mt-8 flex justify-center">

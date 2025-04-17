@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Check, PlayCircle, Settings, ChevronRight, Coins, Workflow, PlusCircle, Copy, ExternalLink, LayoutList, Clock, Loader2 } from "lucide-react";
+import { Check, PlayCircle, Settings, ChevronRight, Coins, Workflow, PlusCircle, Copy, ExternalLink, LayoutList, Clock, Loader2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/inputui";
 import { Button } from "@/components/ui/button";
@@ -378,14 +378,18 @@ const Farming = () => {
             </CardHeader>
             <CardContent>
               <div className="mb-6">
-                <Input 
-                  label="Project Name" 
-                  placeholder="e.g. ZKSync Testnet" 
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  fullWidth
-                  className="mb-4"
-                />
+                <div className="mb-4">
+                  <label htmlFor="projectName" className="block text-sm font-medium text-gray-700 mb-1">
+                    Project Name
+                  </label>
+                  <Input 
+                    id="projectName"
+                    placeholder="e.g. ZKSync Testnet" 
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
                 
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Testnet Chain
@@ -463,12 +467,15 @@ const Farming = () => {
                   </div>
                   
                   <div>
+                    <label htmlFor="walletAddress" className="block text-sm font-medium text-gray-700 mb-1">
+                      Your Wallet Address
+                    </label>
                     <Input 
-                      label="Your Wallet Address" 
+                      id="walletAddress"
                       placeholder="0x..." 
                       value={walletAddress}
                       onChange={(e) => setWalletAddress(e.target.value)}
-                      fullWidth
+                      className="w-full"
                     />
                     <div className="flex justify-between mt-2">
                       <Button 
@@ -523,8 +530,8 @@ const Farming = () => {
                       onClick={handleStartFarming}
                       disabled={walletBalance === null || walletBalance < 0.001}
                       className="w-full bg-scryptex-blue hover:bg-scryptex-dark text-white"
-                      icon={<PlayCircle className="h-5 w-5" />}
                     >
+                      <PlayCircle className="h-5 w-5 mr-2" />
                       Start Auto Farming
                     </Button>
                   )}
@@ -573,7 +580,7 @@ const Farming = () => {
                       key={task.id} 
                       task={task} 
                       isRunning={task.status === "running"}
-                      progress={task.progress}
+                      progress={task.progress || 0}
                     />
                   ))}
                 </div>

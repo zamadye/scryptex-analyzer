@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { BarChart3, Users, CalendarClock, Twitter, Gift } from "lucide-react";
+import { BarChart3, User, CalendarClock, Twitter as TwitterIcon, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +16,8 @@ export const FetcherButtons = ({ onFetcherSelect, activeFetcher, isLoading }: Fe
   const fetcherOptions = [
     { type: "tokenomics" as FetcherType, label: "Tokenomics", icon: <BarChart3 className="w-4 h-4 mr-2" /> },
     { type: "roadmap" as FetcherType, label: "Roadmap", icon: <CalendarClock className="w-4 h-4 mr-2" /> },
-    { type: "backers" as FetcherType, label: "Backers", icon: <Users className="w-4 h-4 mr-2" /> },
-    { type: "social" as FetcherType, label: "Social Media", icon: <Twitter className="w-4 h-4 mr-2" /> },
+    { type: "backers" as FetcherType, label: "Backers", icon: <User className="w-4 h-4 mr-2" /> },
+    { type: "social" as FetcherType, label: "Social Media", icon: <TwitterIcon className="w-4 h-4 mr-2" /> },
     { type: "airdrop" as FetcherType, label: "Airdrop Confirm", icon: <Gift className="w-4 h-4 mr-2" /> },
   ];
 

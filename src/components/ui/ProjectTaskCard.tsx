@@ -1,17 +1,20 @@
 
-import { Check, AlertCircle, CreditCard } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Check, X, LayoutList, Zap, Globe, Coins, RotateCcw, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
-export interface TaskType {
+export type TaskType = {
   id: string;
   name: string;
-  type: "NFT" | "DEX" | "Bridge" | "Contract" | "Other";
+  type: "NFT" | "DEX" | "Bridge" | "Contract" | string;
   status: "pending" | "running" | "completed" | "failed";
   required: boolean;
-  gasCost: string;
+  gasCost?: string;
   details?: string;
-}
+  progress?: number;
+};
 
 interface ProjectTaskCardProps {
   task: TaskType;
@@ -19,93 +22,85 @@ interface ProjectTaskCardProps {
   progress?: number;
 }
 
-export const ProjectTaskCard = ({ task, isRunning, progress = 0 }: ProjectTaskCardProps) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending": return "bg-gray-100 text-gray-800";
-      case "running": return "bg-blue-100 text-blue-800";
-      case "completed": return "bg-green-100 text-green-800";
-      case "failed": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+export const ProjectTaskCard = ({ task, isRunning = false, progress = 0 }: ProjectTaskCardProps) => {
+  const getTypeIcon = (type: string) => {
+    switch(type) {
+      case "NFT": return <LayoutList className="h-4 w-4 text-purple-500" />;
+      case "DEX": return <Zap className="h-4 w-4 text-blue-500" />;
+      case "Bridge": return <Globe className="h-4 w-4 text-green-500" />;
+      case "Contract": return <Coins className="h-4 w-4 text-yellow-500" />;
+      default: return <LayoutList className="h-4 w-4 text-gray-500" />;
     }
   };
   
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "NFT": return "bg-purple-100 text-purple-800";
-      case "DEX": return "bg-blue-100 text-blue-800";
-      case "Bridge": return "bg-orange-100 text-orange-800";
-      case "Contract": return "bg-indigo-100 text-indigo-800";
-      default: return "bg-gray-100 text-gray-800";
+  const getStatusIcon = () => {
+    switch(task.status) {
+      case "completed": return <Check className="h-5 w-5 text-green-500" />;
+      case "failed": return <X className="h-5 w-5 text-red-500" />;
+      case "running": return <RotateCcw className="h-5 w-5 text-blue-500 animate-spin" />;
+      default: return null;
+    }
+  };
+  
+  const getStatusClass = () => {
+    switch(task.status) {
+      case "completed": return "border-green-200 bg-green-50";
+      case "failed": return "border-red-200 bg-red-50";
+      case "running": return "border-blue-200 bg-blue-50";
+      default: return "border-gray-200";
     }
   };
 
   return (
-    <div 
-      className={cn(
-        "border rounded-lg p-4 transition-all duration-300",
-        task.status === "running" ? "border-blue-300 bg-blue-50" : "border-gray-200",
-        task.status === "completed" ? "border-green-300 bg-green-50" : "",
-        task.status === "failed" ? "border-red-300 bg-red-50" : ""
-      )}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center">
-          <div className="flex-shrink-0 mr-3">
-            {task.status === "completed" ? (
-              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                <Check className="h-5 w-5 text-green-600" />
-              </div>
-            ) : task.status === "failed" ? (
-              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-              </div>
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-600 font-medium">{task.id}</span>
-              </div>
-            )}
-          </div>
-          <div>
-            <h3 className="font-medium">{task.name}</h3>
-            <div className="flex flex-wrap gap-2 mt-1">
-              <Badge className={getTypeColor(task.type)}>
-                {task.type}
-              </Badge>
-              <Badge className={task.required ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"}>
-                {task.required ? "Required" : "Optional"}
-              </Badge>
+    <div className={cn(
+      "p-4 border rounded-lg transition-all duration-300",
+      getStatusClass()
+    )}>
+      <div className="flex items-start justify-between">
+        <div className="flex-grow">
+          <div className="flex items-center mb-2">
+            <div className="mr-2">
+              {getTypeIcon(task.type)}
             </div>
+            <h3 className="font-medium">{task.name}</h3>
           </div>
+          
+          <div className="flex items-center text-sm text-gray-600 mb-2">
+            {task.gasCost && (
+              <span className="flex items-center mr-3">
+                <Coins className="h-3.5 w-3.5 mr-1 text-yellow-500" />
+                {task.gasCost}
+              </span>
+            )}
+            
+            <Badge variant={task.required ? "default" : "outline"} className="text-xs">
+              {task.required ? "Required" : "Optional"}
+            </Badge>
+            
+            <Badge variant="outline" className="ml-2 text-xs">
+              {task.type}
+            </Badge>
+          </div>
+          
+          {task.details && (
+            <div className="mt-2 text-sm text-red-600 flex items-center">
+              <AlertCircle className="h-3.5 w-3.5 mr-1" />
+              {task.details}
+            </div>
+          )}
+          
+          {(isRunning || progress > 0) && (
+            <div className="mt-3">
+              <Progress value={progress} className="h-1.5" />
+              <p className="text-xs text-gray-500 mt-1 text-right">{progress}%</p>
+            </div>
+          )}
         </div>
-        <div className="text-right">
-          <Badge className={getStatusColor(task.status)}>
-            {task.status === "pending" && "Pending"}
-            {task.status === "running" && "Running"}
-            {task.status === "completed" && "Completed"}
-            {task.status === "failed" && "Failed"}
-          </Badge>
-          <div className="flex items-center mt-1 text-xs text-gray-500">
-            <CreditCard className="h-3 w-3 mr-1" />
-            <span>{task.gasCost}</span>
-          </div>
+        
+        <div className="ml-4 mt-1">
+          {getStatusIcon()}
         </div>
       </div>
-      
-      {task.details && (
-        <p className="text-sm text-gray-600 my-2">{task.details}</p>
-      )}
-      
-      {isRunning && (
-        <div className="mt-3">
-          <div className="bg-gray-200 h-2 rounded-full overflow-hidden">
-            <div 
-              className="bg-scryptex-blue h-full transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

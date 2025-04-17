@@ -56,6 +56,16 @@ export const CreditPanel = ({ className }: CreditPanelProps) => {
     });
   };
 
+  const handleTopUp = () => {
+    navigate("/topup");
+    setShowModal(false);
+  };
+  
+  const handleReferral = () => {
+    navigate("/referral");
+    setShowModal(false);
+  };
+
   return (
     <div className={className}>
       <CreditStatusBadge credits={credits} onCreditExpire={handleCreditExpire} />
@@ -63,6 +73,8 @@ export const CreditPanel = ({ className }: CreditPanelProps) => {
       <OutOfCreditsModal 
         isOpen={showModal}
         onClose={() => setShowModal(false)}
+        onTopUp={handleTopUp}
+        onReferral={handleReferral}
       />
     </div>
   );
