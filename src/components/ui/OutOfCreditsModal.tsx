@@ -1,5 +1,6 @@
 
-import { X, CreditCard, Share2 } from "lucide-react";
+import React from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface OutOfCreditsModalProps {
@@ -9,60 +10,38 @@ interface OutOfCreditsModalProps {
   onReferral: () => void;
 }
 
-export const OutOfCreditsModal = ({ 
-  isOpen, 
+export function OutOfCreditsModal({
+  isOpen,
   onClose,
   onTopUp,
   onReferral
-}: OutOfCreditsModalProps) => {
-  if (!isOpen) return null;
-  
+}: OutOfCreditsModalProps) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg max-w-md w-full animate-in fade-in zoom-in duration-300">
-        <div className="p-6">
-          <div className="absolute top-4 right-4">
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CreditCard className="h-8 w-8 text-red-500" />
-            </div>
-            <h2 className="text-xl font-bold mb-2">Kredit Anda Telah Habis</h2>
-            <p className="text-gray-600">
-              Lanjutkan farming, analisa, atau post tweet dengan isi ulang cepat.
-            </p>
-          </div>
-          
-          <div className="space-y-3">
-            <Button 
-              onClick={onTopUp}
-              className="w-full bg-scryptex-blue hover:bg-scryptex-dark text-white py-3"
-            >
-              <CreditCard className="h-5 w-5 mr-2" />
-              Top Up Sekarang
-            </Button>
-            
-            <Button 
-              onClick={onReferral}
-              variant="outline" 
-              className="w-full border-gray-300 py-3"
-            >
-              <Share2 className="h-5 w-5 mr-2" />
-              Dapatkan Kredit Gratis lewat Referral
-            </Button>
-          </div>
-          
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>
-              Waktu kamu sangat berharga — jangan biarkan farming berhenti hanya karena kehabisan kredit.
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Kredit Habis</DialogTitle>
+          <DialogDescription>
+            Anda telah menggunakan semua kredit yang tersedia. Isi ulang kredit untuk terus menggunakan fitur Scryptex.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="mt-4 space-y-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+            <h4 className="text-sm font-medium text-amber-800">Tips:</h4>
+            <p className="text-sm text-amber-700 mt-1">
+              Dapatkan kredit gratis dengan mengundang teman menggunakan kode referral Anda.
             </p>
           </div>
         </div>
-      </div>
-    </div>
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+          <Button variant="outline" onClick={onReferral} className="w-full sm:w-auto">
+            Undang Teman
+          </Button>
+          <Button onClick={onTopUp} className="w-full sm:w-auto">
+            Top Up Kredit
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
-};
+}

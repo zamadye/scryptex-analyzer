@@ -14,6 +14,8 @@ import Portfolio from "./pages/Portfolio";
 import Screener from "./pages/Screener";
 import Referral from "./pages/Referral";
 import TopUp from "./pages/TopUp";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import { OutOfCreditsModal } from "@/components/ui/OutOfCreditsModal";
 
@@ -63,6 +65,8 @@ const AppContent = () => {
         <Route path="/screener" element={<Screener />} />
         <Route path="/referral" element={<Referral />} />
         <Route path="/topup" element={<TopUp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/404" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>

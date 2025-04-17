@@ -1,17 +1,32 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, LogIn, UserPlus } from "lucide-react";
 import { CreditPanel } from "@/components/common/CreditPanel";
+import { Button } from "@/components/ui/button";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
+
+  // Check if user is logged in (for demonstration purposes)
+  useEffect(() => {
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(loggedIn);
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    setIsLoggedIn(false);
+    navigate("/");
+  };
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -50,25 +65,56 @@ export const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <CreditPanel />
-            
-            <Link
-              to="/referral"
-              className="text-sm text-gray-700 hover:text-scryptex-blue px-3 py-2"
-            >
-              Referral
-            </Link>
-            <Link
-              to="/topup"
-              className="bg-scryptex-blue hover:bg-scryptex-dark text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Top Up
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <CreditPanel />
+                
+                <Link
+                  to="/referral"
+                  className="text-sm text-gray-700 hover:text-scryptex-blue px-3 py-2"
+                >
+                  Referral
+                </Link>
+                <Link
+                  to="/topup"
+                  className="bg-scryptex-blue hover:bg-scryptex-dark text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
+                  Top Up
+                </Link>
+                <Button 
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="text-gray-700"
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center space-x-1"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button 
+                    className="flex items-center space-x-1 bg-scryptex-blue hover:bg-scryptex-dark"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Sign Up</span>
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <CreditPanel className="mr-4" />
+            {isLoggedIn && <CreditPanel className="mr-4" />}
             
             <button
               type="button"
@@ -102,20 +148,46 @@ export const Navbar = () => {
               {item.name}
             </Link>
           ))}
-          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between">
-            <Link
-              to="/referral"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-scryptex-blue hover:bg-gray-50"
-            >
-              Referral
-            </Link>
-            <Link
-              to="/topup"
-              className="block px-3 py-2 rounded-md text-base font-medium bg-scryptex-blue text-white"
-            >
-              Top Up
-            </Link>
-          </div>
+          
+          {isLoggedIn ? (
+            <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+              <Link
+                to="/referral"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-scryptex-blue hover:bg-gray-50"
+              >
+                Referral
+              </Link>
+              <Link
+                to="/topup"
+                className="block px-3 py-2 rounded-md text-base font-medium bg-scryptex-blue text-white"
+              >
+                Top Up
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full mt-2 px-3 py-2 text-left rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+              <Link
+                to="/login"
+                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-scryptex-blue hover:bg-gray-50"
+              >
+                <LogIn className="h-5 w-5 mr-2" />
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className="flex items-center px-3 py-2 rounded-md text-base font-medium bg-scryptex-blue text-white"
+              >
+                <UserPlus className="h-5 w-5 mr-2" />
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </nav>
