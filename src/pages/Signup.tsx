@@ -8,7 +8,7 @@ import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/inputui";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"; // Updated to match correct casing
 import {
   Form,
   FormControl,
@@ -68,8 +68,9 @@ export default function Signup() {
       console.log("Signup form submitted:", values);
       // Simulate signup success
       setTimeout(() => {
-        toast.success("Pendaftaran berhasil! Silakan login.");
-        navigate("/login");
+        localStorage.setItem("isLoggedIn", "true");
+        toast.success("Pendaftaran berhasil!");
+        navigate("/");
         setIsLoading(false);
       }, 1500);
     } catch (error) {

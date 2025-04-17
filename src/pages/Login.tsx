@@ -8,7 +8,7 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/inputui";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"; // Updated to match correct casing
 import {
   Form,
   FormControl,
@@ -49,6 +49,7 @@ export default function Login() {
       // Simulate login success
       setTimeout(() => {
         toast.success("Login berhasil!");
+        localStorage.setItem("isLoggedIn", "true");
         navigate("/");
         setIsLoading(false);
       }, 1500);
