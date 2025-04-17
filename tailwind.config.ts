@@ -18,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				inter: ['Inter', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -27,6 +30,11 @@ export default {
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
+				},
+				scryptex: {
+					blue: '#3366FF',
+					light: '#E6EDFF',
+					dark: '#1A56FF',
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
