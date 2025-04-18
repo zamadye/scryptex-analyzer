@@ -60,9 +60,11 @@ export {
   FileText,
   Users,
   BarChart,
+  Map,  // Add explicit export for Map
   Wallet,
   Star,
   StarOff,
   Send,
   CalendarDays
 };
+
