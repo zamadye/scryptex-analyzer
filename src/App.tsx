@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -64,8 +65,8 @@ const App = () => {
       <AuthProvider>
         <LanguageProvider>
           <ThemeProvider>
-            <XPProvider>
-              <NotificationProvider>
+            <NotificationProvider>
+              <XPProvider>
                 <TutorialProvider>
                   <TooltipProvider>
                     <Toaster />
@@ -109,8 +110,8 @@ const App = () => {
                     </BrowserRouter>
                   </TooltipProvider>
                 </TutorialProvider>
-              </NotificationProvider>
-            </XPProvider>
+              </XPProvider>
+            </NotificationProvider>
           </ThemeProvider>
         </LanguageProvider>
       </AuthProvider>

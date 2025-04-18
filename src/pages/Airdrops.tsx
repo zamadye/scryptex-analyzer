@@ -1,308 +1,233 @@
 
 import { useState } from "react";
-import { Gift, Plus, Calendar, Link2, Search, ExternalLink } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/cardui";
+import { Gift, PlusCircle, Calendar, Globe, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/inputui";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { Input } from "@/components/ui/inputui";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useXP } from "@/context/XPContext";
+import { useNotifications } from "@/context/NotificationContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { Badge } from "@/components/ui/badge";
-
-const AddAirdropSchema = z.object({
-  projectName: z.string().min(1, { message: "Project name is required" }),
-  link: z.string().url({ message: "Must be a valid URL" }),
-  deadline: z.string().min(1, { message: "Deadline is required" }),
-  description: z.string().min(1, { message: "Description is required" }),
-  chain: z.string().min(1, { message: "Chain is required" }),
-});
-
-type AirdropFormValues = z.infer<typeof AddAirdropSchema>;
-
-interface Airdrop {
-  id: string;
-  projectName: string;
-  link: string;
-  deadline: string;
-  description: string;
-  chain: string;
-  savedAt: string;
-}
+import { Airdrop } from "@/types/airdrop";
 
 export default function Airdrops() {
-  const [airdrops, setAirdrops] = useState<Airdrop[]>(() => {
-    const saved = localStorage.getItem("savedAirdrops");
-    return saved ? JSON.parse(saved) : [];
+  const [airdrops, setAirdrops] = useState<Airdrop[]>([]);
+  const [newAirdrop, setNewAirdrop] = useState({
+    link: "",
+    projectName: "",
+    deadline: "",
+    description: "",
+    chain: "Ethereum"
   });
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterChain, setFilterChain] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const { addXP } = useXP();
+  const { addNotification } = useNotifications();
   const { t } = useLanguage();
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<AirdropFormValues>({
-    resolver: zodResolver(AddAirdropSchema),
-    defaultValues: {
-      projectName: "",
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewAirdrop(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleChainChange = (value: string) => {
+    setNewAirdrop(prev => ({ ...prev, chain: value }));
+  };
+
+  const handleAddAirdrop = () => {
+    // Ensure all required fields are provided
+    if (!newAirdrop.projectName || !newAirdrop.link || !newAirdrop.deadline) {
+      addNotification({
+        title: t('missingFields'),
+        message: t('pleaseCompleteAllRequiredFields'),
+        type: 'error'
+      });
+      return;
+    }
+
+    const airdrop: Airdrop = {
+      id: Date.now().toString(),
+      savedAt: new Date().toISOString(),
+      projectName: newAirdrop.projectName,
+      link: newAirdrop.link,
+      deadline: newAirdrop.deadline,
+      description: newAirdrop.description,
+      chain: newAirdrop.chain
+    };
+
+    setAirdrops(prev => [airdrop, ...prev]);
+    
+    // Add XP and notify user
+    addXP(1, `Saved ${airdrop.projectName} airdrop`);
+    addNotification({
+      title: t('airdropSaved'),
+      message: `${airdrop.projectName} ${t('airdropAddedToYourList')}`,
+      type: 'success'
+    });
+    
+    // Reset form and close dialog
+    setNewAirdrop({
       link: "",
+      projectName: "",
       deadline: "",
       description: "",
-      chain: "",
-    }
-  });
-
-  const onSubmit = (data: AirdropFormValues) => {
-    const newAirdrop: Airdrop = {
-      ...data,
-      id: Date.now().toString(),
-      savedAt: new Date().toISOString()
-    };
-    
-    const updatedAirdrops = [...airdrops, newAirdrop];
-    setAirdrops(updatedAirdrops);
-    localStorage.setItem("savedAirdrops", JSON.stringify(updatedAirdrops));
-    
-    // Add XP
-    addXP(1, `Saved ${data.projectName} airdrop`);
-    
-    // Close dialog and reset form
-    setIsDialogOpen(false);
-    reset();
+      chain: "Ethereum"
+    });
+    setIsOpen(false);
   };
-  
-  const chains = [
-    "Ethereum", 
-    "Polygon", 
-    "Arbitrum", 
-    "Optimism", 
-    "Base", 
-    "ZKSync", 
-    "Scroll", 
-    "Berachain", 
-    "Linea", 
-    "Blast"
-  ];
-  
-  const filteredAirdrops = airdrops.filter(airdrop => {
-    const matchesSearch = airdrop.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          airdrop.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesChain = !filterChain || airdrop.chain === filterChain;
-    
-    return matchesSearch && matchesChain;
-  });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{t('airdrops')}</h1>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t('addAirdrop')}
-        </Button>
+        
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('addAirdrop')}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>{t('addNewAirdrop')}</DialogTitle>
+              <DialogDescription>
+                {t('addAirdropDescription')}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="projectName">{t('projectName')} *</Label>
+                <Input
+                  id="projectName"
+                  name="projectName"
+                  value={newAirdrop.projectName}
+                  onChange={handleInputChange}
+                  placeholder="Sui Network"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="link">{t('link')} *</Label>
+                <Input
+                  id="link"
+                  name="link"
+                  value={newAirdrop.link}
+                  onChange={handleInputChange}
+                  placeholder="https://galxe.com/sui/campaign/..."
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="deadline">{t('deadline')} *</Label>
+                <Input
+                  id="deadline"
+                  name="deadline"
+                  type="date"
+                  value={newAirdrop.deadline}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="chain">{t('chain')}</Label>
+                <Select 
+                  value={newAirdrop.chain} 
+                  onValueChange={handleChainChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('selectChain')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Ethereum">Ethereum</SelectItem>
+                    <SelectItem value="Polygon">Polygon</SelectItem>
+                    <SelectItem value="Arbitrum">Arbitrum</SelectItem>
+                    <SelectItem value="Optimism">Optimism</SelectItem>
+                    <SelectItem value="Base">Base</SelectItem>
+                    <SelectItem value="Solana">Solana</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="description">{t('description')}</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={newAirdrop.description}
+                  onChange={handleInputChange}
+                  placeholder={t('airdropDescriptionPlaceholder')}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAddAirdrop}>
+                {t('saveAirdrop')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-      
-      {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder={t('searchAirdrops')}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={filterChain || ""} onValueChange={(value) => setFilterChain(value || null)}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder={t('filterByChain')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('allChains')}</SelectItem>
-            {chains.map(chain => (
-              <SelectItem key={chain} value={chain}>{chain}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      {/* Airdrops Grid */}
-      {filteredAirdrops.length > 0 ? (
+
+      {airdrops.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAirdrops.map(airdrop => (
-            <Card key={airdrop.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
+          {airdrops.map((airdrop) => (
+            <Card key={airdrop.id} className="overflow-hidden">
+              <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
-                  <CardTitle>{airdrop.projectName}</CardTitle>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
-                    {airdrop.chain}
-                  </Badge>
+                  <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/30">
+                    <Gift className="h-6 w-6 text-purple-500" />
+                  </div>
                 </div>
-                <CardDescription className="mt-2 flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  {t('deadline')}: {airdrop.deadline}
+                <CardTitle className="mt-4">{airdrop.projectName}</CardTitle>
+                <CardDescription className="mt-1 line-clamp-2">
+                  {airdrop.description || t('noDescription')}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
-                  {airdrop.description}
-                </p>
-              </CardContent>
-              <CardFooter className="border-t bg-gray-50 dark:bg-gray-800/50 flex justify-between">
-                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-                  <Gift className="h-3 w-3 mr-1" />
-                  {t('saved')}: {new Date(airdrop.savedAt).toLocaleDateString()}
+              <CardContent className="pb-3">
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-gray-500" />
+                    <a 
+                      href={airdrop.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 dark:text-blue-400 hover:underline truncate"
+                    >
+                      {airdrop.link}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    <span>{airdrop.deadline}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-gray-500" />
+                    <span>{airdrop.chain}</span>
+                  </div>
                 </div>
-                <Button size="sm" variant="outline" asChild>
-                  <a href={airdrop.link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    {t('visit')}
-                  </a>
+              </CardContent>
+              <CardFooter className="pt-0">
+                <Button variant="outline" className="w-full">
+                  {t('viewDetails')}
                 </Button>
               </CardFooter>
             </Card>
           ))}
         </div>
       ) : (
-        <Card className="bg-gray-50 dark:bg-gray-800/30 border-dashed">
-          <CardContent className="py-10 flex flex-col items-center text-center">
-            <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
-              <Gift className="h-8 w-8 text-gray-400 dark:text-gray-500" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">{t('noAirdrops')}</h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-              {t('noAirdropsDescription')}
-            </p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('addFirstAirdrop')}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="text-center py-12">
+          <Gift className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('noAirdropsYet')}</h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">
+            {t('noAirdropsDescription')}
+          </p>
+        </div>
       )}
-      
-      {/* Add Airdrop Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{t('addNewAirdrop')}</DialogTitle>
-            <DialogDescription>
-              {t('addNewAirdropDescription')}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('projectName')}</label>
-              <Controller
-                control={control}
-                name="projectName"
-                render={({ field }) => (
-                  <Input {...field} placeholder="e.g. ZKSync, Arbitrum" />
-                )}
-              />
-              {errors.projectName && (
-                <p className="text-sm text-red-500">{errors.projectName.message}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('link')}</label>
-              <div className="relative">
-                <Link2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Controller
-                  control={control}
-                  name="link"
-                  render={({ field }) => (
-                    <Input {...field} className="pl-9" placeholder="https://example.com" />
-                  )}
-                />
-              </div>
-              {errors.link && (
-                <p className="text-sm text-red-500">{errors.link.message}</p>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('deadline')}</label>
-                <Controller
-                  control={control}
-                  name="deadline"
-                  render={({ field }) => (
-                    <Input {...field} placeholder="e.g. May 30, 2025" />
-                  )}
-                />
-                {errors.deadline && (
-                  <p className="text-sm text-red-500">{errors.deadline.message}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('chain')}</label>
-                <Controller
-                  control={control}
-                  name="chain"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('selectChain')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {chains.map(chain => (
-                          <SelectItem key={chain} value={chain}>{chain}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.chain && (
-                  <p className="text-sm text-red-500">{errors.chain.message}</p>
-                )}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('description')}</label>
-              <Controller
-                control={control}
-                name="description"
-                render={({ field }) => (
-                  <Textarea 
-                    {...field} 
-                    placeholder={t('describeAirdrop')}
-                    className="min-h-[100px]"
-                  />
-                )}
-              />
-              {errors.description && (
-                <p className="text-sm text-red-500">{errors.description.message}</p>
-              )}
-            </div>
-            
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  reset();
-                }}
-              >
-                {t('cancel')}
-              </Button>
-              <Button type="submit">
-                <Plus className="h-4 w-4 mr-2" />
-                {t('addAirdrop')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
