@@ -23,7 +23,7 @@ import {
   FileText,
   Users,
   BarChart3 as BarChart,
-  RoadMap,
+  Map,
   Wallet,
   Star,
   StarOff,
@@ -33,6 +33,8 @@ import {
 
 // Export renamed icons to avoid conflicts
 export const Twitter = TwitterIcon;
+// Replace RoadMap with Map for the roadmap functionality
+export const RoadMap = Map;
 
 // Export other icons directly
 export {
@@ -58,7 +60,6 @@ export {
   FileText,
   Users,
   BarChart,
-  RoadMap,
   Wallet,
   Star,
   StarOff,

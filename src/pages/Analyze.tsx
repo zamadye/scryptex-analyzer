@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Search, Globe, ArrowRight, FileText, Users, BarChart, RoadMap, Wallet } from "lucide-react";
+import { Search, Globe, ArrowRight, FileText, Users, BarChart, Map as RoadMap, Wallet } from "@/components/icons";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/inputui";
