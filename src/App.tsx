@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AuthProvider } from "@/context/AuthContext";
@@ -30,11 +29,9 @@ import { OutOfCreditsModal } from "@/components/ui/OutOfCreditsModal";
 import { TutorialOverlay } from "@/components/common/TutorialOverlay";
 
 const App = () => {
-  // Create a client with defaults
   const [queryClient] = useState(() => new QueryClient());
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   
-  // Check if credits are 0 when component mounts
   useEffect(() => {
     const checkCredits = () => {
       const savedCredits = localStorage.getItem('userCredits');
@@ -43,10 +40,8 @@ const App = () => {
       }
     };
     
-    // Check initially
     checkCredits();
     
-    // Listen for storage events (when credits change)
     window.addEventListener('storage', checkCredits);
     
     return () => {
@@ -77,13 +72,15 @@ const App = () => {
                     <Sonner />
                     <BrowserRouter>
                       <Routes>
-                        {/* Authentication routes with standard layout */}
-                        <Route element={<PageLayout>{/* Route outlet - React Router will insert child routes here */}</PageLayout>}>
+                        <Route element={
+                          <PageLayout>
+                            <Outlet />
+                          </PageLayout>
+                        }>
                           <Route path="/login" element={<Login />} />
                           <Route path="/signup" element={<Signup />} />
                         </Route>
                         
-                        {/* Dashboard routes with dashboard layout */}
                         <Route element={<DashboardLayout />}>
                           <Route path="/" element={<Dashboard />} />
                           <Route path="/analyze" element={<Analyze />} />
@@ -97,12 +94,10 @@ const App = () => {
                           <Route path="/referral" element={<Referral />} />
                         </Route>
                         
-                        {/* Fallback routes */}
                         <Route path="/404" element={<NotFound />} />
                         <Route path="*" element={<Navigate to="/404" replace />} />
                       </Routes>
                       
-                      {/* Out of credits modal */}
                       <OutOfCreditsModal 
                         isOpen={showCreditsModal}
                         onClose={() => setShowCreditsModal(false)}
@@ -110,7 +105,6 @@ const App = () => {
                         onReferral={handleReferral}
                       />
 
-                      {/* Tutorial Overlay */}
                       <TutorialOverlay />
                     </BrowserRouter>
                   </TooltipProvider>
