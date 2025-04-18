@@ -62,7 +62,7 @@ export function Topbar({ sidebarOpen, toggleSidebar }: TopbarProps) {
         </div>
         
         <div className="flex items-center space-x-4">
-          <CreditPanel id="credit-panel" />
+          <CreditPanel className="credit-panel" />
           
           {/* Language & Theme Dropdown */}
           <DropdownMenu>

@@ -1,6 +1,7 @@
+
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";  // Notice the lowercase 'button'
+import { Button } from "@/components/ui/button";  // Using the shadcn/ui button component
 
 interface OutOfCreditsModalProps {
   isOpen: boolean;

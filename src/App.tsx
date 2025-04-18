@@ -78,7 +78,7 @@ const App = () => {
                     <BrowserRouter>
                       <Routes>
                         {/* Authentication routes with standard layout */}
-                        <Route element={<PageLayout />}>
+                        <Route element={<PageLayout>{/* Route outlet - React Router will insert child routes here */}</PageLayout>}>
                           <Route path="/login" element={<Login />} />
                           <Route path="/signup" element={<Signup />} />
                         </Route>
