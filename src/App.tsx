@@ -7,6 +7,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { AuthProvider } from "@/context/AuthContext";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { TutorialProvider } from "@/context/TutorialContext";
+import { NotificationProvider } from "@/context/NotificationContext";
+import { XPProvider } from "@/context/XPContext";
 import Dashboard from "./pages/Dashboard";
 import Analyze from "./pages/Analyze";
 import Autopilot from "./pages/Autopilot";
@@ -21,6 +27,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import { OutOfCreditsModal } from "@/components/ui/OutOfCreditsModal";
+import { TutorialOverlay } from "@/components/common/TutorialOverlay";
 
 const App = () => {
   // Create a client with defaults
@@ -59,45 +66,60 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Authentication routes with standard layout */}
-            <Route element={<PageLayout><div /></PageLayout>}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-            </Route>
-            
-            {/* Dashboard routes with dashboard layout */}
-            <Route element={<DashboardLayout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/analyze" element={<Analyze />} />
-              <Route path="/farming" element={<Farming />} />
-              <Route path="/twitter" element={<TwitterAgent />} />
-              <Route path="/airdrops" element={<Airdrops />} />
-              <Route path="/saved" element={<Portfolio />} />
-              <Route path="/notifications" element={<Screener />} />
-              <Route path="/settings" element={<Referral />} />
-              <Route path="/topup" element={<TopUp />} />
-              <Route path="/referral" element={<Referral />} />
-            </Route>
-            
-            {/* Fallback routes */}
-            <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<Navigate to="/404" replace />} />
-          </Routes>
-          
-          {/* Out of credits modal */}
-          <OutOfCreditsModal 
-            isOpen={showCreditsModal}
-            onClose={() => setShowCreditsModal(false)}
-            onTopUp={handleTopUp}
-            onReferral={handleReferral}
-          />
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <XPProvider>
+              <NotificationProvider>
+                <TutorialProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <Routes>
+                        {/* Authentication routes with standard layout */}
+                        <Route element={<PageLayout />}>
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/signup" element={<Signup />} />
+                        </Route>
+                        
+                        {/* Dashboard routes with dashboard layout */}
+                        <Route element={<DashboardLayout />}>
+                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/analyze" element={<Analyze />} />
+                          <Route path="/farming" element={<Farming />} />
+                          <Route path="/twitter" element={<TwitterAgent />} />
+                          <Route path="/airdrops" element={<Airdrops />} />
+                          <Route path="/saved" element={<Portfolio />} />
+                          <Route path="/notifications" element={<Screener />} />
+                          <Route path="/settings" element={<Referral />} />
+                          <Route path="/topup" element={<TopUp />} />
+                          <Route path="/referral" element={<Referral />} />
+                        </Route>
+                        
+                        {/* Fallback routes */}
+                        <Route path="/404" element={<NotFound />} />
+                        <Route path="*" element={<Navigate to="/404" replace />} />
+                      </Routes>
+                      
+                      {/* Out of credits modal */}
+                      <OutOfCreditsModal 
+                        isOpen={showCreditsModal}
+                        onClose={() => setShowCreditsModal(false)}
+                        onTopUp={handleTopUp}
+                        onReferral={handleReferral}
+                      />
+
+                      {/* Tutorial Overlay */}
+                      <TutorialOverlay />
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </TutorialProvider>
+              </NotificationProvider>
+            </XPProvider>
+          </ThemeProvider>
+        </LanguageProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

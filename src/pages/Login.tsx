@@ -6,9 +6,11 @@ import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 import { Input } from "@/components/ui/inputui";
-import { Button } from "@/components/ui/button"; // Updated to match correct casing
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -29,6 +31,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const { t } = useLanguage();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -46,39 +50,43 @@ export default function Login() {
     try {
       setIsLoading(true);
       console.log("Login form submitted:", values);
-      // Simulate login success
-      setTimeout(() => {
-        toast.success("Login berhasil!");
-        localStorage.setItem("isLoggedIn", "true");
+      
+      try {
+        await login(values.email, values.password);
+        toast.success(t('loginSuccess'));
         navigate("/");
-        setIsLoading(false);
-      }, 1500);
+      } catch (error) {
+        console.error("Login error:", error);
+        toast.error(t('loginFailed'));
+      }
+      
+      setIsLoading(false);
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login gagal. Silakan coba lagi.");
+      toast.error(t('loginFailed'));
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Login ke Scryptex
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          {t('loginToScryptex')}
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Atau{" "}
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          {t('or')}{" "}
           <Link
             to="/signup"
-            className="font-medium text-scryptex-blue hover:text-scryptex-dark"
+            className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
-            buat akun baru
+            {t('createNewAccount')}
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -86,13 +94,13 @@ export default function Login() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('email')}</FormLabel>
                     <div className="relative">
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                           <Input
-                            placeholder="Masukkan email anda"
+                            placeholder={t('enterYourEmail')}
                             className="pl-10"
                             {...field}
                           />
@@ -109,14 +117,14 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('password')}</FormLabel>
                     <div className="relative">
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Masukkan password anda"
+                            placeholder={t('enterYourPassword')}
                             className="pl-10"
                             {...field}
                           />
@@ -145,32 +153,32 @@ export default function Login() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-scryptex-blue focus:ring-scryptex-blue border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label
                     htmlFor="remember-me"
-                    className="ml-2 block text-sm text-gray-900"
+                    className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
                   >
-                    Ingat saya
+                    {t('rememberMe')}
                   </label>
                 </div>
 
                 <div className="text-sm">
                   <Link
                     to="/forgot-password"
-                    className="font-medium text-scryptex-blue hover:text-scryptex-dark"
+                    className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
                   >
-                    Lupa password?
+                    {t('forgotPassword')}
                   </Link>
                 </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-scryptex-blue hover:bg-scryptex-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-scryptex-blue"
+                className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? "Memproses..." : "Login"}
+                {isLoading ? t('processing') : t('login')}
               </Button>
             </form>
           </Form>

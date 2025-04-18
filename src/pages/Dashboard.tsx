@@ -1,142 +1,92 @@
-import { useState, useEffect } from "react";
-import { ArrowRight, BarChart, Clock, Activity, Search, Leaf, Twitter, Gift } from "@/components/icons";
+
+import { useEffect } from "react";
+import { ArrowRight, BarChart, Clock, Activity, Search, Leaf, Twitter, Gift } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Button } from "@/components/ui/button";
-
-// Agent status definitions
-type AgentStatus = "ready" | "running" | "pending";
-
-interface Agent {
-  id: string;
-  name: string;
-  icon: JSX.Element;
-  status: AgentStatus;
-  lastUsed: string;
-  path: string;
-}
-
-interface Activity {
-  id: string;
-  agent: string;
-  project: string;
-  action: string;
-  timestamp: string;
-}
+import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { useNotifications } from "@/context/NotificationContext";
 
 export default function Dashboard() {
+  const { user, isLoggedIn } = useAuth();
+  const { t } = useLanguage();
+  const { addNotification } = useNotifications();
+  
+  // Show welcome notification
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      addNotification({
+        title: `${t('welcome')}, ${user.name}!`,
+        message: t('welcomeToDashboard'),
+        type: 'info'
+      });
+      
+      // Check if credit is low (for demo purposes)
+      const credits = localStorage.getItem('userCredits');
+      if (credits && parseInt(credits) < 5) {
+        setTimeout(() => {
+          addNotification({
+            title: t('creditLow'),
+            message: t('visitTopupPage'),
+            type: 'warning'
+          });
+        }, 3000);
+      }
+    }
+  }, [isLoggedIn, user]);
+
   // Agent data
-  const [agents, setAgents] = useState<Agent[]>([
+  const agents = [
     {
       id: "analyze",
-      name: "Analyze Agent",
+      name: t('analyze'),
       icon: <Search className="h-10 w-10 text-blue-500" />,
-      status: "ready",
-      lastUsed: "2 hours ago",
+      description: t('analyzeAgentDesc'),
+      lastUsed: user?.analyzedProjects?.length ? "Active" : "Ready",
       path: "/analyze"
     },
     {
       id: "farming",
-      name: "Farming Agent",
+      name: t('farming'),
       icon: <Leaf className="h-10 w-10 text-green-500" />,
-      status: "ready",
-      lastUsed: "1 day ago",
+      description: t('farmingAgentDesc'),
+      lastUsed: user?.farmedProjects?.length ? "Active" : "Ready",
       path: "/farming"
     },
     {
       id: "twitter",
-      name: "Twitter Agent",
+      name: t('twitter'),
       icon: <Twitter className="h-10 w-10 text-sky-500" />,
-      status: "pending",
-      lastUsed: "3 days ago",
+      description: t('twitterAgentDesc'),
+      lastUsed: user?.twitterHandle ? "Connected" : "Ready",
       path: "/twitter"
     },
     {
       id: "airdrop",
-      name: "Airdrop Explorer",
+      name: t('airdrops'),
       icon: <Gift className="h-10 w-10 text-purple-500" />,
-      status: "ready",
-      lastUsed: "12 hours ago",
+      description: t('airdropExplorerDesc'),
+      lastUsed: "Ready",
       path: "/airdrops"
     }
-  ]);
+  ];
 
   // Activity data
-  const [activities, setActivities] = useState<Activity[]>([
-    {
-      id: "1",
-      agent: "Analyze Agent",
-      project: "Arbitrum",
-      action: "Project Analysis Completed",
-      timestamp: "2 hours ago"
-    },
-    {
-      id: "2",
-      agent: "Farming Agent",
-      project: "ZKSync",
-      action: "Completed 3 Tasks",
-      timestamp: "1 day ago"
-    },
-    {
-      id: "3",
-      agent: "Twitter Agent",
-      project: "Optimism",
-      action: "Scheduled 2 Tweets",
-      timestamp: "3 days ago"
-    },
-    {
-      id: "4",
-      agent: "Airdrop Explorer",
-      project: "Linea",
-      action: "Added to watchlist",
-      timestamp: "4 days ago"
-    },
-    {
-      id: "5",
-      agent: "Analyze Agent",
-      project: "Scroll",
-      action: "Project Analysis Completed",
-      timestamp: "5 days ago"
-    }
-  ]);
+  const activities = user?.analyzedProjects?.map(project => ({
+    id: `analyze-${project}`,
+    agent: t('analyze'),
+    project,
+    action: t('projectAnalysisCompleted'),
+    timestamp: "Recently"
+  })) || [];
 
   // Stats data
-  const [stats, setStats] = useState({
-    analyzed: 12,
-    airdrops: 24,
-    farmed: 36,
-    posts: 18
-  });
-
-  // Get status badge color
-  const getStatusColor = (status: AgentStatus) => {
-    switch (status) {
-      case "ready":
-        return "bg-green-100 text-green-800";
-      case "running":
-        return "bg-blue-100 text-blue-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const activateAgent = (agentId: string) => {
-    // Update the agent status to "running"
-    setAgents(agents.map(agent => 
-      agent.id === agentId 
-        ? { ...agent, status: "running" as AgentStatus }
-        : agent
-    ));
-    
-    // After 2 seconds, set it back to ready (simulating completion)
-    setTimeout(() => {
-      setAgents(agents.map(agent => 
-        agent.id === agentId 
-          ? { ...agent, status: "ready" as AgentStatus, lastUsed: "just now" }
-          : agent
-      ));
-    }, 2000);
+  const stats = {
+    analyzed: user?.analyzedProjects?.length || 0,
+    airdrops: 0,
+    farmed: user?.farmedProjects?.length || 0,
+    posts: 0
   };
 
   return (
@@ -144,44 +94,53 @@ export default function Dashboard() {
       {/* Hero section */}
       <section className="relative rounded-xl overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 md:p-10">
         <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Your AI Agent Control Room</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">{t('aiAgentControlRoom')}</h1>
           <p className="text-lg md:text-xl opacity-90 mb-6 max-w-2xl">
-            Manage, automate, and track your Web3 airdrop journey.
+            {t('dashboardDescription')}
           </p>
           <Button variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
-            Get Started <ArrowRight className="ml-2 h-4 w-4" />
+            {t('getStarted')} <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
         <div className="absolute top-0 right-0 w-1/3 h-full opacity-10">
-          {/* Background image would go here */}
+          {/* Background pattern */}
         </div>
       </section>
 
       {/* Agent cards */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Agent Overview</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('agentOverview')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {agents.map(agent => (
-            <Card key={agent.id} className="overflow-hidden transition-all duration-200 hover:shadow-md">
+            <Card 
+              key={agent.id} 
+              id={`${agent.id}-agent-card`}
+              className="overflow-hidden transition-all duration-200 hover:shadow-md hover:shadow-blue-100 dark:hover:shadow-blue-900/20"
+            >
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
-                  <div>{agent.icon}</div>
-                  <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getStatusColor(agent.status)}`}>
-                    {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+                  <div className="p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+                    {agent.icon}
+                  </div>
+                  <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full 
+                    ${agent.lastUsed === "Active" || agent.lastUsed === "Connected" 
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" 
+                      : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"}`}
+                  >
+                    {agent.lastUsed}
                   </span>
                 </div>
                 <CardTitle className="mt-4">{agent.name}</CardTitle>
-                <CardDescription className="flex items-center mt-1">
-                  <Clock className="mr-1 h-3 w-3" /> Last used: {agent.lastUsed}
+                <CardDescription className="mt-2">
+                  {agent.description}
                 </CardDescription>
               </CardHeader>
               <CardFooter className="pt-0">
                 <Button 
                   className="w-full"
-                  onClick={() => activateAgent(agent.id)}
                   asChild
                 >
-                  <a href={agent.path}>Activate</a>
+                  <Link to={agent.path}>{t('activate')}</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -191,27 +150,34 @@ export default function Dashboard() {
 
       {/* Recent activity */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('recentActivity')}</h2>
         <Card>
           <CardContent className="p-0">
-            <div className="divide-y divide-gray-100">
-              {activities.map(activity => (
-                <div key={activity.id} className="flex items-start p-4">
-                  <Activity className="h-5 w-5 text-gray-500 mt-0.5 mr-4" />
-                  <div className="flex-1">
-                    <p className="font-medium">{activity.action}</p>
-                    <p className="text-sm text-gray-500">
-                      {activity.agent} • {activity.project}
-                    </p>
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {activities.length > 0 ? (
+                activities.map(activity => (
+                  <div key={activity.id} className="flex items-start p-4">
+                    <Activity className="h-5 w-5 text-gray-500 dark:text-gray-400 mt-0.5 mr-4" />
+                    <div className="flex-1">
+                      <p className="font-medium">{activity.action}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {activity.agent} • {activity.project}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{activity.timestamp}</span>
                   </div>
-                  <span className="text-xs text-gray-500">{activity.timestamp}</span>
+                ))
+              ) : (
+                <div className="p-6 text-center">
+                  <p className="text-gray-500 dark:text-gray-400">{t('noRecentActivity')}</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{t('startUsingAgents')}</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
-          <CardFooter className="justify-center border-t bg-gray-50">
+          <CardFooter className="justify-center border-t bg-gray-50 dark:bg-gray-800/50">
             <Button variant="ghost" size="sm">
-              View All Activity
+              {t('viewAllActivity')}
             </Button>
           </CardFooter>
         </Card>
@@ -219,18 +185,18 @@ export default function Dashboard() {
 
       {/* Stats section */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Global Stats</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('globalStats')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Projects Analyzed</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('projectsAnalyzed')}</p>
                   <p className="text-3xl font-bold">{stats.analyzed}</p>
-                  <p className="text-xs text-gray-500 mt-1">This week</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('thisWeek')}</p>
                 </div>
-                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Search className="h-6 w-6 text-blue-600" />
+                <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                  <Search className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
@@ -240,12 +206,12 @@ export default function Dashboard() {
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Airdrops Tracked</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('airdropsTracked')}</p>
                   <p className="text-3xl font-bold">{stats.airdrops}</p>
-                  <p className="text-xs text-gray-500 mt-1">Total active</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('totalActive')}</p>
                 </div>
-                <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Gift className="h-6 w-6 text-purple-600" />
+                <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                  <Gift className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </CardContent>
@@ -255,12 +221,12 @@ export default function Dashboard() {
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Tasks Farmed</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('tasksFarmed')}</p>
                   <p className="text-3xl font-bold">{stats.farmed}</p>
-                  <p className="text-xs text-gray-500 mt-1">Total completed</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('totalCompleted')}</p>
                 </div>
-                <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Leaf className="h-6 w-6 text-green-600" />
+                <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <Leaf className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
@@ -270,12 +236,12 @@ export default function Dashboard() {
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Posts Published</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('postsPublished')}</p>
                   <p className="text-3xl font-bold">{stats.posts}</p>
-                  <p className="text-xs text-gray-500 mt-1">Engagement rate: 3.2%</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('engagementRate')}: 3.2%</p>
                 </div>
-                <div className="h-12 w-12 bg-sky-100 rounded-full flex items-center justify-center">
-                  <Twitter className="h-6 w-6 text-sky-600" />
+                <div className="h-12 w-12 bg-sky-100 dark:bg-sky-900/30 rounded-full flex items-center justify-center">
+                  <Twitter className="h-6 w-6 text-sky-600 dark:text-sky-400" />
                 </div>
               </div>
             </CardContent>

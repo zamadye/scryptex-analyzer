@@ -1,210 +1,213 @@
 
-import { useState } from "react";
-import { Copy, Share, Twitter, MessageSquare, Users, Gift } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/cardui";
-import { useToast } from "@/hooks/use-toast";
-import { CreditManager } from "@/components/common/CreditPanel";
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/cardui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/inputui';
+import { Copy, Gift, Users, CreditCard, Share } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { CreditManager } from '@/components/common/CreditPanel';
+import { toast } from '@/hooks/use-toast';
+import { useLanguage } from '@/context/LanguageContext';
 
-const Referral = () => {
-  const { toast } = useToast();
+export default function Referral() {
+  const { user } = useAuth();
+  const [copied, setCopied] = useState(false);
+  const [email, setEmail] = useState('');
+  const { t } = useLanguage();
   
-  // Generate a random referral code
-  const [referralCode] = useState(() => {
-    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return result;
-  });
+  const referralCode = user?.referralCode || 'SCX123456';
+  const referralLink = `https://scryptex.ai/r/${referralCode}`;
+  const invites = user?.invites || 0;
   
-  // Referral stats
-  const [referred] = useState(3);
-  const maxReferrals = 6;
-  const creditPerReferral = 5;
-  const totalEarned = referred * creditPerReferral;
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast({
+      title: t('copied'),
+      description: t('referralCodeCopied'),
+    });
+    
+    setTimeout(() => setCopied(false), 2000);
+  };
   
-  const referralUrl = `https://scryptex.app/register?ref=${referralCode}`;
+  const sendInvite = () => {
+    if (!email) return;
+    
+    // Simulate sending invitation
+    toast({
+      title: t('inviteSent'),
+      description: `${t('inviteSentTo')} ${email}`,
+    });
+    
+    setEmail('');
+  };
   
-  // Copy link to clipboard
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(referralUrl);
+  const claimBonus = () => {
+    // Add 10 credits
+    CreditManager.addCredits(10);
     
     toast({
-      title: "Copied!",
-      description: "Referral link copied to clipboard.",
+      title: t('bonusClaimed'),
+      description: t('bonusCreditsAdded'),
     });
   };
   
-  // Share to Twitter
-  const handleShareTwitter = () => {
-    const text = encodeURIComponent(`I'm using Scryptex to analyze crypto projects and automate testnet farming! Join me and let's maximize our airdrop rewards. Use my referral code: ${referralCode}`);
-    const url = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(referralUrl)}`;
-    window.open(url, '_blank');
-  };
-  
-  // Share to Telegram
-  const handleShareTelegram = () => {
-    const text = encodeURIComponent(`I'm using Scryptex to analyze crypto projects and automate testnet farming! Join me and let's maximize our airdrop rewards. Use my referral code: ${referralCode}`);
-    const url = `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${text}`;
-    window.open(url, '_blank');
-  };
-  
-  // Add mock credits
-  const handleCollectCredits = () => {
-    CreditManager.addCredits(5);
-    
-    toast({
-      title: "Credits Added!",
-      description: "5 credits have been added to your account.",
-    });
-  };
-
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6">
-      <div className="text-center mb-12 animate-in fade-in duration-300">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Referral Program</h1>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          Share Scryptex with others and earn free credits for your airdrop hunting journey.
-        </p>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">{t('referral')}</h1>
+        <div className="flex items-center space-x-2 text-sm font-medium text-gray-500">
+          <Users className="h-4 w-4" />
+          <span>{t('inviteFriends')}</span>
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2">
-          <Card className="h-full animate-in fade-in slide-in-from-left-5 duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Gift className="mr-2 h-5 w-5 text-scryptex-blue" />
-                Your Referral Link
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-center text-scryptex-blue mb-4">
-                  Bagikan Scryptex & dapatkan hingga 30 kredit GRATIS!
-                </h2>
-                <p className="text-gray-700 mb-4">
-                  Untuk setiap 1 teman yang daftar dan farming pertama kali, Anda dapat +5 kredit gratis. Maksimal 6 teman per minggu.
-                </p>
-                
-                <div className="flex items-center mb-6">
-                  <div className="flex-1 bg-gray-50 border rounded-l-lg p-3 truncate">
-                    {referralUrl}
-                  </div>
-                  <Button 
-                    onClick={handleCopyLink}
-                    className="rounded-l-none bg-scryptex-blue text-white"
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy
-                  </Button>
-                </div>
-                
-                <div className="text-center text-sm text-gray-500 mb-4">
-                  Or share directly to:
-                </div>
-                
-                <div className="flex justify-center space-x-3">
-                  <Button 
-                    onClick={handleShareTwitter}
-                    className="bg-[#1DA1F2] hover:bg-[#1a94da] text-white"
-                  >
-                    <Twitter className="h-4 w-4 mr-2" />
-                    Twitter
-                  </Button>
-                  <Button 
-                    onClick={handleShareTelegram}
-                    className="bg-[#0088cc] hover:bg-[#0077b3] text-white"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Telegram
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="mt-8 bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-2">Copywriting ideas for your shares:</h3>
-                <div className="space-y-3 text-gray-600 text-sm">
-                  <p>"Satu ajakanmu = satu peluang farming lagi."</p>
-                  <p>"Berbagi Scryptex, berbagi kesempatan."</p>
-                  <p>"Temukan proyek-proyek potensial sebelum semua orang dengan Scryptex! Gunakan link referralku untuk mulai."</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div>
-          <Card className="mb-6 animate-in fade-in slide-in-from-right-5 duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="mr-2 h-5 w-5 text-scryptex-blue" />
-                Referral Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Your Referral Code</div>
-                  <div className="font-mono text-lg font-bold">{referralCode}</div>
-                </div>
-                
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Friends Referred</div>
-                  <div className="flex items-center">
-                    <span className="text-xl font-bold">{referred}</span>
-                    <span className="text-gray-500 mx-1">/</span>
-                    <span className="text-gray-500">{maxReferrals}</span>
-                    <span className="ml-1 text-xs text-gray-500">(weekly limit)</span>
-                  </div>
-                  
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div 
-                      className="bg-scryptex-blue h-2.5 rounded-full" 
-                      style={{ width: `${(referred / maxReferrals) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Credits Earned</div>
-                  <div className="text-xl font-bold">{totalEarned} credits</div>
-                  <div className="text-xs text-gray-500">
-                    ({creditPerReferral} credits per referral)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="bg-gray-50 border-t">
-              <Button 
-                onClick={handleCollectCredits}
-                className="w-full bg-scryptex-blue hover:bg-scryptex-dark text-white"
-                disabled={referred === 0}
-              >
-                <Gift className="h-4 w-4 mr-2" />
-                Collect {totalEarned} Credits
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Referral Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('yourReferralCode')}</CardTitle>
+            <CardDescription>
+              {t('shareCodeDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <span className="font-bold text-lg">{referralCode}</span>
+              <Button variant="outline" size="sm" onClick={() => copyToClipboard(referralCode)}>
+                <Copy className="h-4 w-4 mr-2" />
+                {copied ? t('copied') : t('copy')}
               </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card className="animate-in fade-in slide-in-from-right-5 duration-500">
-            <CardContent className="p-4">
-              <div className="text-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Referral Rules:</h3>
-                <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                  <li>Referral must complete account verification</li>
-                  <li>Referral must perform at least one farming activity</li>
-                  <li>Weekly limit resets every Monday</li>
-                  <li>Credits expire in 30 days if unused</li>
-                </ul>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium">{t('referralLink')}</label>
+              <div className="mt-1 flex gap-2">
+                <Input value={referralLink} readOnly className="flex-1" />
+                <Button variant="outline" onClick={() => copyToClipboard(referralLink)}>
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+            
+            <div className="mt-4 space-y-4">
+              <div className="flex gap-2">
+                <Input 
+                  placeholder={t('enterFriendEmail')} 
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Button onClick={sendInvite} disabled={!email}>
+                  <Share className="h-4 w-4 mr-2" />
+                  {t('invite')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t bg-gray-50 dark:bg-gray-800/50 flex justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="mr-1">{t('invitesSent')}:</span>
+              <span className="font-semibold">{invites}</span>
+            </div>
+          </CardFooter>
+        </Card>
+        
+        {/* Rewards Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('referralRewards')}</CardTitle>
+            <CardDescription>
+              {t('referralRewardsDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md border border-blue-100 dark:border-blue-800">
+              <div className="flex items-start space-x-4">
+                <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
+                  <Gift className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                </div>
+                <div>
+                  <h3 className="font-medium">{t('inviteBonus')}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    {t('inviteBonusDescription')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-md border border-green-100 dark:border-green-800">
+              <div className="flex items-start space-x-4">
+                <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-green-600 dark:text-green-300" />
+                </div>
+                <div>
+                  <h3 className="font-medium">{t('referralCredit')}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    {t('referralCreditDescription')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+              <Button className="w-full" onClick={claimBonus}>
+                <Gift className="h-4 w-4 mr-2" />
+                {t('claimBonus')}
+              </Button>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t bg-gray-50 dark:bg-gray-800/50 flex justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="mr-1">{t('availableBonus')}:</span>
+              <span className="font-semibold">10 {t('credits')}</span>
+            </div>
+          </CardFooter>
+        </Card>
       </div>
+      
+      {/* How It Works Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('howItWorks')}</CardTitle>
+          <CardDescription>
+            {t('referralProcessDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">1</div>
+              </div>
+              <h3 className="font-medium mb-2">{t('shareYourCode')}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('shareYourCodeDescription')}
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">2</div>
+              </div>
+              <h3 className="font-medium mb-2">{t('friendJoins')}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('friendJoinsDescription')}
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">3</div>
+              </div>
+              <h3 className="font-medium mb-2">{t('getBothRewards')}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('getBothRewardsDescription')}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default Referral;
+}

@@ -1,339 +1,308 @@
 
 import { useState } from "react";
-import { 
-  Gift, Search, Calendar, ChevronDown, Filter, Star, StarOff, ExternalLink
-} from "lucide-react";
-import { 
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle 
-} from "@/components/ui/cardui";
+import { Gift, Plus, Calendar, Link2, Search, ExternalLink } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/inputui";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useXP } from "@/context/XPContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
-// Airdrop interface
+const AddAirdropSchema = z.object({
+  projectName: z.string().min(1, { message: "Project name is required" }),
+  link: z.string().url({ message: "Must be a valid URL" }),
+  deadline: z.string().min(1, { message: "Deadline is required" }),
+  description: z.string().min(1, { message: "Description is required" }),
+  chain: z.string().min(1, { message: "Chain is required" }),
+});
+
+type AirdropFormValues = z.infer<typeof AddAirdropSchema>;
+
 interface Airdrop {
   id: string;
-  name: string;
-  logo: string;
+  projectName: string;
+  link: string;
+  deadline: string;
+  description: string;
   chain: string;
-  endDate: string;
-  taskCount: number;
-  reward: string;
-  category: string;
-  saved: boolean;
+  savedAt: string;
 }
 
 export default function Airdrops() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [airdrops, setAirdrops] = useState<Airdrop[]>([
-    {
-      id: "1",
-      name: "Arbitrum",
-      logo: "/media/arbitrum-logo.png",
-      chain: "Ethereum",
-      endDate: "May 15, 2025",
-      taskCount: 5,
-      reward: "500-2000 ARB",
-      category: "L2",
-      saved: true
-    },
-    {
-      id: "2",
-      name: "ZKSync",
-      logo: "/media/zksync-logo.png",
-      chain: "Ethereum",
-      endDate: "June 2, 2025",
-      taskCount: 3,
-      reward: "Unknown",
-      category: "L2",
-      saved: false
-    },
-    {
-      id: "3",
-      name: "Optimism",
-      logo: "/media/optimism-logo.png",
-      chain: "Ethereum",
-      endDate: "July 30, 2025",
-      taskCount: 7,
-      reward: "1000-5000 OP",
-      category: "L2",
-      saved: true
-    },
-    {
-      id: "4",
-      name: "Linea",
-      logo: "/media/linea-logo.png",
-      chain: "Ethereum",
-      endDate: "August 15, 2025",
-      taskCount: 4,
-      reward: "Unknown",
-      category: "L2",
-      saved: false
-    },
-    {
-      id: "5",
-      name: "Blast",
-      logo: "/media/blast-logo.png",
-      chain: "Ethereum",
-      endDate: "September 10, 2025",
-      taskCount: 6,
-      reward: "250-1200 BLAST",
-      category: "L2",
-      saved: false
-    },
-    {
-      id: "6",
-      name: "Scroll",
-      logo: "/media/scroll-logo.png",
-      chain: "Ethereum",
-      endDate: "October 5, 2025",
-      taskCount: 3,
-      reward: "Unknown",
-      category: "L2",
-      saved: false
+  const [airdrops, setAirdrops] = useState<Airdrop[]>(() => {
+    const saved = localStorage.getItem("savedAirdrops");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterChain, setFilterChain] = useState<string | null>(null);
+  const { addXP } = useXP();
+  const { t } = useLanguage();
+
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<AirdropFormValues>({
+    resolver: zodResolver(AddAirdropSchema),
+    defaultValues: {
+      projectName: "",
+      link: "",
+      deadline: "",
+      description: "",
+      chain: "",
     }
-  ]);
+  });
 
-  const toggleSaved = (id: string) => {
-    setAirdrops(airdrops.map(airdrop => 
-      airdrop.id === id ? { ...airdrop, saved: !airdrop.saved } : airdrop
-    ));
+  const onSubmit = (data: AirdropFormValues) => {
+    const newAirdrop: Airdrop = {
+      ...data,
+      id: Date.now().toString(),
+      savedAt: new Date().toISOString()
+    };
+    
+    const updatedAirdrops = [...airdrops, newAirdrop];
+    setAirdrops(updatedAirdrops);
+    localStorage.setItem("savedAirdrops", JSON.stringify(updatedAirdrops));
+    
+    // Add XP
+    addXP(1, `Saved ${data.projectName} airdrop`);
+    
+    // Close dialog and reset form
+    setIsDialogOpen(false);
+    reset();
   };
-
+  
+  const chains = [
+    "Ethereum", 
+    "Polygon", 
+    "Arbitrum", 
+    "Optimism", 
+    "Base", 
+    "ZKSync", 
+    "Scroll", 
+    "Berachain", 
+    "Linea", 
+    "Blast"
+  ];
+  
   const filteredAirdrops = airdrops.filter(airdrop => {
-    if (filter === "saved" && !airdrop.saved) return false;
-    if (searchQuery && !airdrop.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    return true;
+    const matchesSearch = airdrop.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          airdrop.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesChain = !filterChain || airdrop.chain === filterChain;
+    
+    return matchesSearch && matchesChain;
   });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Airdrop Explorer</h1>
-        <Button>
-          <Gift className="mr-2 h-4 w-4" />
-          Add New Airdrop
+        <h1 className="text-3xl font-bold">{t('airdrops')}</h1>
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t('addAirdrop')}
         </Button>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Live Airdrops</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{airdrops.length}</div>
-            <p className="text-sm text-gray-500">Tracked projects</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Saved Airdrops</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{airdrops.filter(a => a.saved).length}</div>
-            <p className="text-sm text-gray-500">In your watchlist</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Ending Soon</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">2</div>
-            <p className="text-sm text-gray-500">In the next 30 days</p>
-          </CardContent>
-        </Card>
+      
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder={t('searchAirdrops')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={filterChain || ""} onValueChange={(value) => setFilterChain(value || null)}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder={t('filterByChain')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">{t('allChains')}</SelectItem>
+            {chains.map(chain => (
+              <SelectItem key={chain} value={chain}>{chain}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Airdrop Opportunities</CardTitle>
-          <CardDescription>
-            Potential and confirmed airdrops to explore
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search projects"
-                className="pl-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+      
+      {/* Airdrops Grid */}
+      {filteredAirdrops.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredAirdrops.map(airdrop => (
+            <Card key={airdrop.id} className="overflow-hidden hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <CardTitle>{airdrop.projectName}</CardTitle>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                    {airdrop.chain}
+                  </Badge>
+                </div>
+                <CardDescription className="mt-2 flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  {t('deadline')}: {airdrop.deadline}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                  {airdrop.description}
+                </p>
+              </CardContent>
+              <CardFooter className="border-t bg-gray-50 dark:bg-gray-800/50 flex justify-between">
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                  <Gift className="h-3 w-3 mr-1" />
+                  {t('saved')}: {new Date(airdrop.savedAt).toLocaleDateString()}
+                </div>
+                <Button size="sm" variant="outline" asChild>
+                  <a href={airdrop.link} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    {t('visit')}
+                  </a>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="bg-gray-50 dark:bg-gray-800/30 border-dashed">
+          <CardContent className="py-10 flex flex-col items-center text-center">
+            <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+              <Gift className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+            </div>
+            <h3 className="text-lg font-medium mb-2">{t('noAirdrops')}</h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
+              {t('noAirdropsDescription')}
+            </p>
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('addFirstAirdrop')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Add Airdrop Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{t('addNewAirdrop')}</DialogTitle>
+            <DialogDescription>
+              {t('addNewAirdropDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('projectName')}</label>
+              <Controller
+                control={control}
+                name="projectName"
+                render={({ field }) => (
+                  <Input {...field} placeholder="e.g. ZKSync, Arbitrum" />
+                )}
               />
+              {errors.projectName && (
+                <p className="text-sm text-red-500">{errors.projectName.message}</p>
+              )}
             </div>
             
-            <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filter
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setFilter("all")}>All Projects</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilter("saved")}>Saved Only</DropdownMenuItem>
-                  <DropdownMenuItem>Layer 2</DropdownMenuItem>
-                  <DropdownMenuItem>DeFi</DropdownMenuItem>
-                  <DropdownMenuItem>GameFi</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('link')}</label>
+              <div className="relative">
+                <Link2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Controller
+                  control={control}
+                  name="link"
+                  render={({ field }) => (
+                    <Input {...field} className="pl-9" placeholder="https://example.com" />
+                  )}
+                />
+              </div>
+              {errors.link && (
+                <p className="text-sm text-red-500">{errors.link.message}</p>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t('deadline')}</label>
+                <Controller
+                  control={control}
+                  name="deadline"
+                  render={({ field }) => (
+                    <Input {...field} placeholder="e.g. May 30, 2025" />
+                  )}
+                />
+                {errors.deadline && (
+                  <p className="text-sm text-red-500">{errors.deadline.message}</p>
+                )}
+              </div>
               
-              <Tabs defaultValue="grid" className="w-[100px]">
-                <TabsList>
-                  <TabsTrigger value="grid" className="w-10 p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 002 4.25v2.5A2.25 2.25 0 004.25 9h2.5A2.25 2.25 0 009 6.75v-2.5A2.25 2.25 0 006.75 2h-2.5zm0 9A2.25 2.25 0 002 13.25v2.5A2.25 2.25 0 004.25 18h2.5A2.25 2.25 0 009 15.75v-2.5A2.25 2.25 0 006.75 11h-2.5zm9-9A2.25 2.25 0 0011 4.25v2.5A2.25 2.25 0 0013.25 9h2.5A2.25 2.25 0 0018 6.75v-2.5A2.25 2.25 0 0015.75 2h-2.5zm0 9A2.25 2.25 0 0011 13.25v2.5A2.25 2.25 0 0013.25 18h2.5A2.25 2.25 0 0018 15.75v-2.5A2.25 2.25 0 0015.75 11h-2.5z" clipRule="evenodd" />
-                    </svg>
-                  </TabsTrigger>
-                  <TabsTrigger value="list" className="w-10 p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M2 3.75A.75.75 0 012.75 3h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 3.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.166a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
-                    </svg>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t('chain')}</label>
+                <Controller
+                  control={control}
+                  name="chain"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('selectChain')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {chains.map(chain => (
+                          <SelectItem key={chain} value={chain}>{chain}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.chain && (
+                  <p className="text-sm text-red-500">{errors.chain.message}</p>
+                )}
+              </div>
             </div>
-          </div>
-          
-          <TabsContent value="grid" className="mt-0 space-y-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAirdrops.map(airdrop => (
-                <Card key={airdrop.id} className="overflow-hidden">
-                  <CardHeader className="pb-2 pt-6">
-                    <div className="flex justify-between">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gray-100 rounded-full mr-3 flex items-center justify-center">
-                          {/* Placeholder for logo */}
-                          <span className="font-bold text-gray-600">{airdrop.name.substring(0, 1)}</span>
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg">{airdrop.name}</CardTitle>
-                          <CardDescription>{airdrop.chain}</CardDescription>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => toggleSaved(airdrop.id)}
-                        className="text-gray-400 hover:text-yellow-500"
-                      >
-                        {airdrop.saved ? (
-                          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                        ) : (
-                          <StarOff className="h-5 w-5" />
-                        )}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">End Date:</span>
-                        <div className="flex items-center">
-                          <Calendar className="h-3 w-3 mr-1 text-gray-400" />
-                          <span>{airdrop.endDate}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Tasks:</span>
-                        <Badge variant="outline">{airdrop.taskCount} Actions</Badge>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Reward Est:</span>
-                        <span className="font-medium">{airdrop.reward}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-2 pb-6 flex justify-between">
-                    <Button variant="outline" size="sm">
-                      View Tasks
-                    </Button>
-                    <Button size="sm">
-                      Analyze
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('description')}</label>
+              <Controller
+                control={control}
+                name="description"
+                render={({ field }) => (
+                  <Textarea 
+                    {...field} 
+                    placeholder={t('describeAirdrop')}
+                    className="min-h-[100px]"
+                  />
+                )}
+              />
+              {errors.description && (
+                <p className="text-sm text-red-500">{errors.description.message}</p>
+              )}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="list" className="mt-0 space-y-0">
-            <div className="border rounded-md divide-y">
-              {filteredAirdrops.map(airdrop => (
-                <div key={airdrop.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full mr-3 flex items-center justify-center">
-                      <span className="font-bold text-gray-600">{airdrop.name.substring(0, 1)}</span>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{airdrop.name}</h3>
-                      <p className="text-sm text-gray-500">{airdrop.chain} • {airdrop.category}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="hidden lg:flex items-center space-x-4">
-                    <div className="text-sm">
-                      <div className="font-medium">Ending</div>
-                      <div className="text-gray-500">{airdrop.endDate}</div>
-                    </div>
-                    
-                    <div className="text-sm">
-                      <div className="font-medium">Tasks</div>
-                      <div className="text-center text-gray-500">{airdrop.taskCount}</div>
-                    </div>
-                    
-                    <div className="text-sm">
-                      <div className="font-medium">Rewards</div>
-                      <div className="text-gray-500">{airdrop.reward}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => toggleSaved(airdrop.id)}
-                      className="text-gray-400 hover:text-yellow-500"
-                    >
-                      {airdrop.saved ? (
-                        <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                      ) : (
-                        <StarOff className="h-5 w-5" />
-                      )}
-                    </Button>
-                    
-                    <Button size="sm">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-        </CardContent>
-        <CardFooter className="justify-between">
-          <p className="text-sm text-gray-500">Showing {filteredAirdrops.length} of {airdrops.length} airdrops</p>
-          <Button variant="outline" size="sm">
-            Load More
-          </Button>
-        </CardFooter>
-      </Card>
+            
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  reset();
+                }}
+              >
+                {t('cancel')}
+              </Button>
+              <Button type="submit">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('addAirdrop')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
