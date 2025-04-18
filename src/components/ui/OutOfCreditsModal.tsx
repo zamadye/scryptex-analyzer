@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button"; // Updated import to match casing used in the project
+import { Button } from "@/components/ui/button";
 
 interface OutOfCreditsModalProps {
   isOpen: boolean;
