@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { ArrowRight, BarChart, Clock, Activity, Search, Leaf, Twitter, Gift } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/cardui";
@@ -13,7 +12,6 @@ export default function Dashboard() {
   const { t } = useLanguage();
   const { addNotification } = useNotifications();
   
-  // Show welcome notification
   useEffect(() => {
     if (isLoggedIn && user) {
       addNotification({
@@ -22,7 +20,6 @@ export default function Dashboard() {
         type: 'info'
       });
       
-      // Check if credit is low (for demo purposes)
       const credits = localStorage.getItem('userCredits');
       if (credits && parseInt(credits) < 5) {
         setTimeout(() => {
@@ -36,7 +33,6 @@ export default function Dashboard() {
     }
   }, [isLoggedIn, user]);
 
-  // Agent data
   const agents = [
     {
       id: "analyze",
@@ -72,7 +68,6 @@ export default function Dashboard() {
     }
   ];
 
-  // Activity data
   const activities = user?.analyzedProjects?.map(project => ({
     id: `analyze-${project}`,
     agent: t('analyze'),
@@ -81,7 +76,6 @@ export default function Dashboard() {
     timestamp: "Recently"
   })) || [];
 
-  // Stats data
   const stats = {
     analyzed: user?.analyzedProjects?.length || 0,
     airdrops: 0,
@@ -91,7 +85,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col space-y-8 animate-in fade-in duration-500">
-      {/* Hero section */}
       <section className="relative rounded-xl overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 md:p-10">
         <div className="relative z-10">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">{t('aiAgentControlRoom')}</h1>
@@ -107,7 +100,6 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Agent cards */}
       <section>
         <h2 className="text-2xl font-bold mb-6">{t('agentOverview')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -136,19 +128,17 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardFooter className="pt-0">
-                <Button 
-                  className="w-full"
-                  asChild
-                >
-                  <Link to={agent.path}>{t('activate')}</Link>
-                </Button>
+                <Link to={agent.path} className="w-full">
+                  <Button className="w-full">
+                    {t('activate')}
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}
         </div>
       </section>
 
-      {/* Recent activity */}
       <section>
         <h2 className="text-2xl font-bold mb-6">{t('recentActivity')}</h2>
         <Card>
@@ -183,7 +173,6 @@ export default function Dashboard() {
         </Card>
       </section>
 
-      {/* Stats section */}
       <section>
         <h2 className="text-2xl font-bold mb-6">{t('globalStats')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
