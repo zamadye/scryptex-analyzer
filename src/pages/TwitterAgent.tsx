@@ -138,7 +138,6 @@ export default function TwitterAgent() {
       toast({
         title: t('interactionComplete'),
         description: `Liked and retweeted recent posts from ${targetAccounts.split(',')[0]}`,
-        type: 'success',
       });
     }, 3000);
   };
@@ -480,7 +479,7 @@ export default function TwitterAgent() {
                                   <p className="my-2">{tweet.content}</p>
                                 </div>
                                 <Badge 
-                                  variant={tweet.status === 'posted' ? "success" : "outline"}
+                                  variant={tweet.status === 'posted' ? "secondary" : "outline"}
                                   className={tweet.status === 'posted' ? "bg-green-100 text-green-800" : ""}
                                 >
                                   {tweet.status === 'posted' ? t('posted') : t('scheduled')}

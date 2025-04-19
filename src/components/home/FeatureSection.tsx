@@ -4,6 +4,7 @@ import { BarChart, Twitter, Wallet, Gift, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
 import { Link } from "react-router-dom";
+import { renderToStaticMarkup } from "react-dom/server";
 
 export const FeatureSection = () => {
   const { t } = useLanguage();
@@ -117,7 +118,7 @@ export const FeatureSection = () => {
                         e.currentTarget.src = "";
                         e.currentTarget.parentElement!.innerHTML = `
                           <div class="flex flex-col items-center justify-center w-full h-full bg-gray-50 p-8">
-                            ${React.renderToStaticMarkup(feature.icon)}
+                            ${renderToStaticMarkup(feature.icon)}
                             <p class="mt-4 text-lg font-medium">${feature.title}</p>
                           </div>
                         `;

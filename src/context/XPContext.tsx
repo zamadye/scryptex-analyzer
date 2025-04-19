@@ -5,6 +5,7 @@ import { useNotifications } from './NotificationContext';
 
 interface XPContextType {
   addXP: (amount: number, action: string) => void;
+  xp: number; // Add xp property
 }
 
 const XPContext = createContext<XPContextType | undefined>(undefined);
@@ -36,8 +37,11 @@ export const XPProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
+  // Get current XP from user
+  const xp = user?.xp || 0;
+  
   return (
-    <XPContext.Provider value={{ addXP }}>
+    <XPContext.Provider value={{ addXP, xp }}>
       {children}
     </XPContext.Provider>
   );
