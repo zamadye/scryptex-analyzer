@@ -1,7 +1,8 @@
 
 import { useState } from "react";
-import { Twitter } from "lucide-react";
-import { Card } from "@/components/ui/cardui";
+import { Twitter, Check } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/cardui";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useToast } from "@/hooks/use-toast";
