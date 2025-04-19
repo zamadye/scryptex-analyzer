@@ -122,13 +122,13 @@ export default function TwitterAgent() {
   const configureFarming = () => {
     toast({
       title: t('socialFarmingConfigured'),
-      description: `Will auto-interact with ${targetAccounts} ${interactionFrequency[0]} times per day.`,
+      description: `Will auto-interact with ${targetAccounts} ${interactionFrequency[0]} times per day.`
     });
     
     setTimeout(() => {
       toast({
         title: t('interactionComplete'),
-        description: `Liked and retweeted recent posts from ${targetAccounts.split(',')[0]}`,
+        description: `Liked and retweeted recent posts from ${targetAccounts.split(',')[0]}`
       });
     }, 3000);
   };

@@ -1,24 +1,23 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/context/NotificationContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Bell, Check, Clock, AlertCircle, Search, Leaf, Twitter } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";  // Ensure correct import
+import { useToast } from "@/hooks/use-toast";
 
 export default function Notifications() {
   const { notifications, markAllAsRead, clearNotifications } = useNotifications();
   const { t } = useLanguage();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-  const { toast } = useToast();  // Get toast method correctly
-  
+  const { toast } = useToast();
+
   const filteredNotifications = notifications.filter((notification) => {
     if (filter === 'unread') return !notification.read;
     if (filter === 'read') return notification.read;
     return true;
   });
-  
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'success':
@@ -31,7 +30,7 @@ export default function Notifications() {
         return <Bell className="h-5 w-5 text-blue-500" />;
     }
   };
-  
+
   const getActionIcon = (title: string) => {
     if (title.toLowerCase().includes('analyze') || title.toLowerCase().includes('project')) {
       return <Search className="h-4 w-4 text-blue-500" />;
@@ -57,8 +56,9 @@ export default function Notifications() {
             onClick={() => {
               markAllAsRead();
               toast({
-                title: t('notificationsMarkedAsRead')
-              });  // Fixed: Single argument
+                title: t('notificationsMarkedAsRead'),
+                description: ''
+              });
             }}
           >
             {t('markAllAsRead')}
@@ -69,8 +69,9 @@ export default function Notifications() {
             onClick={() => {
               clearNotifications();
               toast({
-                title: t('notificationsCleared')
-              });  // Fixed: Single argument
+                title: t('notificationsCleared'),
+                description: ''
+              });
             }}
           >
             {t('clearAll')}
