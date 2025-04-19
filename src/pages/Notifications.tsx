@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Button } from "@/components/ui/button";
@@ -58,7 +57,7 @@ export default function Notifications() {
               markAllAsRead();
               toast({
                 title: t('notificationsMarkedAsRead'),
-                description: t('notificationsMarkedAsReadDescription') // Added description
+                description: t('notificationsMarkedAsReadDescription')
               });
             }}
           >
@@ -71,7 +70,7 @@ export default function Notifications() {
               clearNotifications();
               toast({
                 title: t('notificationsCleared'),
-                description: t('notificationsClearedDescription') // Added description
+                description: t('notificationsClearedDescription')
               });
             }}
           >
