@@ -1,35 +1,24 @@
 
-from typing import Optional, List
-from pydantic import BaseModel, Field
-
-class ChainInfo(BaseModel):
-    name: str = Field(..., description="Chain name")
-    rpc_url: str = Field(..., description="RPC URL")
-    chain_id: int = Field(..., description="Chain ID")
-    symbol: str = Field(..., description="Native token symbol")
-    explorer_url: Optional[str] = Field(None, description="Block explorer URL")
+from pydantic import BaseModel, Field, HttpUrl
+from typing import List, Optional, Dict
 
 class FarmingTask(BaseModel):
-    name: str
-    type: str  # swap, mint, bridge, etc.
-    is_required: bool = True
-    estimated_gas: float = 0.0
-    status: str = "pending"  # pending, success, failed
+    type: str
+    description: str
+    credits: int
 
-class FarmingAnalyzeRequest(BaseModel):
+class FarmingRequest(BaseModel):
+    project_name: str = Field(..., min_length=1, max_length=100)
+    website: Optional[HttpUrl] = None
+    
+class AddChainRequest(BaseModel):
+    chain_name: str
+    chain_id: int
+    currency: str
+    rpc_url: str
+
+class FarmingResponse(BaseModel):
     project_name: str
+    tasks: List[FarmingTask]
     chain: str
-    wallet_address: Optional[str] = None
-
-class FarmingStartRequest(BaseModel):
-    project_id: str
-    wallet_address: str
-    tasks: List[str] = []
-
-class FarmingProject(BaseModel):
-    id: str
-    name: str
-    chain: str
-    tasks: List[FarmingTask] = []
-    last_farmed: Optional[str] = None
-    status: str = "active"  # active, completed
+    status: str = "wallet not connected"

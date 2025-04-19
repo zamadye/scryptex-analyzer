@@ -1,10 +1,10 @@
 
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
-from jose import jwt
-from core.config import settings
+import random
+import asyncio
+from typing import Any, Dict, List, Optional
 
-def generate_response(data: Any = None, message: str = "OK", success: bool = True) -> Dict:
+def generate_response(data: Any = None, message: str = "Success", success: bool = True) -> Dict:
     """Generate a standardized API response"""
     return {
         "success": success,
@@ -13,16 +13,11 @@ def generate_response(data: Any = None, message: str = "OK", success: bool = Tru
         "timestamp": datetime.now().isoformat()
     }
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Create JWT access token"""
-    to_encode = data.copy()
-    
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
-    
-    return encoded_jwt
+async def simulate_delay(min_seconds: float = 0.5, max_seconds: float = 2.0) -> None:
+    """Simulate a processing delay"""
+    delay = random.uniform(min_seconds, max_seconds)
+    await asyncio.sleep(delay)
+
+def generate_id() -> str:
+    """Generate a random ID"""
+    return f"{random.randint(10000, 99999)}-{random.randint(1000, 9999)}"

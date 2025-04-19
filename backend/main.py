@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from routes import analyze, farming, autopilot, airdrop, credit
+# Import all routers
+from routers import analyze, farming, twitter, credit, airdrop, auth, referral, notification
 
 app = FastAPI(
     title="Scryptex API",
@@ -23,9 +24,17 @@ app.add_middleware(
 # Include routers
 app.include_router(analyze.router, prefix="/api", tags=["analyze"])
 app.include_router(farming.router, prefix="/api", tags=["farming"])
-app.include_router(autopilot.router, prefix="/api", tags=["autopilot"])
-app.include_router(airdrop.router, prefix="/api", tags=["airdrop"])
+app.include_router(twitter.router, prefix="/api", tags=["twitter"])
 app.include_router(credit.router, prefix="/api", tags=["credit"])
+app.include_router(airdrop.router, prefix="/api", tags=["airdrop"])
+app.include_router(auth.router, prefix="/api", tags=["auth"])
+app.include_router(referral.router, prefix="/api", tags=["referral"])
+app.include_router(notification.router, prefix="/api", tags=["notification"])
+
+# Test route
+@app.get("/api/ping")
+async def ping():
+    return {"status": "ok"}
 
 @app.get("/")
 async def root():

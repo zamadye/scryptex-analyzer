@@ -1,21 +1,22 @@
 
-from typing import Optional, List
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, HttpUrl, Field
+from typing import Dict, List, Optional
 
-class ProjectAnalyzeRequest(BaseModel):
-    name: str = Field(..., description="Project name")
-    website: Optional[HttpUrl] = Field(None, description="Project website URL")
-    twitter_handle: Optional[str] = Field(None, description="Project Twitter handle")
-    description: Optional[str] = Field(None, description="Project description")
+class AnalyzeRequest(BaseModel):
+    project_name: str = Field(..., min_length=1, max_length=100)
+    website: Optional[HttpUrl] = None
 
-class FetcherRequest(BaseModel):
-    project_id: str = Field(..., description="Project ID")
-    fetcher_type: str = Field(..., description="Fetcher type (tokenomics, roadmap, backers, social, airdrop)")
+class AnalysisSection(BaseModel):
+    title: str
+    content: str
+    status: str = "completed"
 
-class ProjectAnalysisResult(BaseModel):
-    project_id: str
-    name: str
-    description: Optional[str] = None
-    score: Optional[float] = None
-    analysis_date: str
-    fetchers_available: List[str] = []
+class AnalyzeResponse(BaseModel):
+    project_name: str
+    about_project: Optional[str] = None
+    tokenomics: Optional[str] = None
+    roadmap: Optional[str] = None
+    backers: Optional[List[str]] = None
+    team: Optional[List[str]] = None
+    sections_completed: int = 0
+    total_sections: int = 5
