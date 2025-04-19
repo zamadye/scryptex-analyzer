@@ -25,10 +25,23 @@ import Screener from "./pages/Screener";
 import Referral from "./pages/Referral";
 import TopUp from "./pages/TopUp";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
 import { OutOfCreditsModal } from "@/components/ui/OutOfCreditsModal";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
-import { TutorialOverlay } from "@/components/common/TutorialOverlay";
+import { lazy, Suspense } from "react";
+
+// Loading component for suspense fallback
+const LoadingScreen = () => (
+  <div className="h-screen w-full flex items-center justify-center">
+    <div className="flex flex-col items-center">
+      <div className="h-12 w-12 rounded-full border-4 border-t-blue-500 border-b-blue-500 border-l-transparent border-r-transparent animate-spin"></div>
+      <p className="mt-4 text-blue-600 font-medium">Loading...</p>
+    </div>
+  </div>
+);
 
 // Route Guard for protected routes
 const ProtectedRoute = () => {
@@ -100,37 +113,50 @@ const App = () => {
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
-                      <Routes>
-                        {/* Landing page route */}
-                        <Route 
-                          path="/" 
-                          element={
-                            <PageLayout>
-                              <Home />
-                            </PageLayout>
-                          } 
-                        />
-                        
-                        {/* Protected dashboard routes */}
-                        <Route element={<ProtectedRoute />}>
-                          <Route element={<DashboardLayout />}>
-                            <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/analyze" element={<Analyze />} />
-                            <Route path="/farming" element={<Farming />} />
-                            <Route path="/twitter" element={<TwitterAgent />} />
-                            <Route path="/airdrops" element={<Airdrops />} />
-                            <Route path="/portfolio" element={<Portfolio />} />
-                            <Route path="/screener" element={<Screener />} />
-                            <Route path="/referral" element={<Referral />} />
-                            <Route path="/topup" element={<TopUp />} />
+                      <Suspense fallback={<LoadingScreen />}>
+                        <Routes>
+                          {/* Landing page route */}
+                          <Route 
+                            path="/" 
+                            element={
+                              <PageLayout>
+                                <Home />
+                              </PageLayout>
+                            } 
+                          />
+                          
+                          {/* Protected dashboard routes */}
+                          <Route element={<ProtectedRoute />}>
+                            <Route element={<DashboardLayout />}>
+                              <Route path="/dashboard" element={<Dashboard />} />
+                              <Route path="/analyze" element={<Analyze />} />
+                              <Route path="/farming" element={<Farming />} />
+                              <Route path="/twitter" element={<TwitterAgent />} />
+                              <Route path="/airdrops" element={<Airdrops />} />
+                              <Route path="/portfolio" element={<Portfolio />} />
+                              <Route path="/screener" element={<Screener />} />
+                              <Route path="/referral" element={<Referral />} />
+                              <Route path="/topup" element={<TopUp />} />
+                              <Route path="/profile" element={<Profile />} />
+                              <Route path="/settings" element={<Settings />} />
+                              <Route path="/notifications" element={<Notifications />} />
+                            </Route>
                           </Route>
-                        </Route>
-                        
-                        <Route path="/404" element={<NotFound />} />
-                        <Route path="*" element={<Navigate to="/404" replace />} />
-                      </Routes>
-                      
-                      <TutorialOverlay />
+                          
+                          {/* Redirect to dashboard if user tries to access / while logged in */}
+                          <Route 
+                            path="/login" 
+                            element={<Navigate to="/dashboard" replace />} 
+                          />
+                          <Route 
+                            path="/signup" 
+                            element={<Navigate to="/dashboard" replace />} 
+                          />
+                          
+                          <Route path="/404" element={<NotFound />} />
+                          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                        </Routes>
+                      </Suspense>
                       
                       <OutOfCreditsModal 
                         isOpen={showCreditsModal}

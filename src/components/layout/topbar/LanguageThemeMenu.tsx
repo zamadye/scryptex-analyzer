@@ -22,9 +22,10 @@ export const LanguageThemeMenu = () => {
   // Create a safe tutorial context hook
   const useSafeTutorial = () => {
     try {
-      // Dynamic import to avoid the error when the TutorialContext isn't available
+      // Import TutorialContext only if it's available in the current context
       const { useTutorial } = require("@/context/TutorialContext");
-      return useTutorial();
+      const tutorialContext = useTutorial();
+      return tutorialContext;
     } catch (error) {
       // Return a dummy object with the required methods if TutorialContext is not available
       return {
@@ -33,7 +34,7 @@ export const LanguageThemeMenu = () => {
     }
   };
   
-  const { startTutorial } = useSafeTutorial();
+  const tutorialContext = useSafeTutorial();
 
   return (
     <DropdownMenu>
@@ -70,7 +71,7 @@ export const LanguageThemeMenu = () => {
         
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem onClick={startTutorial}>
+        <DropdownMenuItem onClick={() => tutorialContext.startTutorial()}>
           <Settings className="mr-2 h-4 w-4" />
           {t('tutorial')}
         </DropdownMenuItem>

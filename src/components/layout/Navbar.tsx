@@ -1,37 +1,37 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, LogIn, UserPlus } from "lucide-react";
 import { CreditPanel } from "@/components/common/CreditPanel";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isLoggedIn, logout } = useAuth();
   
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(loggedIn);
-  }, [location.pathname]);
-
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    setIsLoggedIn(false);
+    logout();
     navigate("/");
+  };
+  
+  const handleLogin = () => {
+    setShowAuthModal(true);
   };
 
   const navItems = [
     { name: "Home", path: "/" },
-    { name: "Analyze", path: "/analyze" },
-    { name: "Autopilot", path: "/autopilot" },
-    { name: "Farming", path: "/farming" },
-    { name: "Airdrops", path: "/portfolio" },
-    { name: "Screener", path: "/screener" },
+    { name: "Features", path: "/#features" },
+    { name: "Pricing", path: "/#pricing" },
+    { name: "Dashboard", path: "/dashboard" },
   ];
 
   return (
@@ -87,23 +87,21 @@ export const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login">
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center space-x-1"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>Login</span>
-                  </Button>
-                </Link>
-                <Link to="/signup">
-                  <Button 
-                    className="flex items-center space-x-1 bg-scryptex-blue hover:bg-scryptex-dark"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    <span>Sign Up</span>
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center space-x-1"
+                  onClick={handleLogin}
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </Button>
+                <Button 
+                  className="flex items-center space-x-1 bg-scryptex-blue hover:bg-scryptex-dark"
+                  onClick={handleLogin}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Sign Up</span>
+                </Button>
               </>
             )}
           </div>
@@ -166,24 +164,29 @@ export const Navbar = () => {
             </div>
           ) : (
             <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-              <Link
-                to="/login"
-                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-scryptex-blue hover:bg-gray-50"
+              <button
+                onClick={handleLogin}
+                className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-scryptex-blue hover:bg-gray-50"
               >
                 <LogIn className="h-5 w-5 mr-2" />
                 Login
-              </Link>
-              <Link
-                to="/signup"
-                className="flex items-center px-3 py-2 rounded-md text-base font-medium bg-scryptex-blue text-white"
+              </button>
+              <button
+                onClick={handleLogin}
+                className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium bg-scryptex-blue text-white"
               >
                 <UserPlus className="h-5 w-5 mr-2" />
                 Sign Up
-              </Link>
+              </button>
             </div>
           )}
         </div>
       </div>
+      
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </nav>
   );
 };

@@ -1,10 +1,11 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, Search, Leaf, Twitter, Gift, 
-  Bookmark, Bell, Settings, ChevronLeft, ChevronRight
-} from "@/components/icons";
+  Bookmark, Bell, Settings, User, ChevronLeft, ChevronRight
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -14,20 +15,30 @@ interface NavItemProps {
   collapsed?: boolean;
 }
 
-const NavItem = ({ icon, label, to, active, collapsed }: NavItemProps) => (
-  <Link
-    to={to}
-    className={cn(
-      "flex items-center px-3 py-2 my-1 rounded-lg text-sm font-medium transition-colors",
-      active
-        ? "bg-blue-50 text-blue-600"
-        : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
-    )}
-  >
-    <div className="flex items-center justify-center w-8 h-8">{icon}</div>
-    {!collapsed && <span className="ml-3">{label}</span>}
-  </Link>
-);
+const NavItem = ({ icon, label, to, active, collapsed }: NavItemProps) => {
+  const navigate = useNavigate();
+  
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(to);
+  };
+  
+  return (
+    <Link
+      to={to}
+      onClick={handleClick}
+      className={cn(
+        "flex items-center px-3 py-2 my-1 rounded-lg text-sm font-medium transition-colors",
+        active
+          ? "bg-blue-50 text-blue-600"
+          : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+      )}
+    >
+      <div className="flex items-center justify-center w-8 h-8">{icon}</div>
+      {!collapsed && <span className="ml-3">{label}</span>}
+    </Link>
+  );
+};
 
 interface SidebarProps {
   open: boolean;
@@ -35,7 +46,20 @@ interface SidebarProps {
 
 export function Sidebar({ open }: SidebarProps) {
   const location = useLocation();
+  const { t } = useLanguage();
   const isActive = (path: string) => location.pathname === path;
+  
+  const navItems = [
+    { to: "/dashboard", icon: <LayoutDashboard size={20} />, label: t('dashboard') },
+    { to: "/analyze", icon: <Search size={20} />, label: t('analyze') },
+    { to: "/farming", icon: <Leaf size={20} />, label: t('farming') },
+    { to: "/twitter", icon: <Twitter size={20} />, label: t('twitterAgent') },
+    { to: "/airdrops", icon: <Gift size={20} />, label: t('airdropExplorer') },
+    { to: "/portfolio", icon: <Bookmark size={20} />, label: t('savedProjects') },
+    { to: "/notifications", icon: <Bell size={20} />, label: t('notifications') },
+    { to: "/profile", icon: <User size={20} />, label: t('profile') },
+    { to: "/settings", icon: <Settings size={20} />, label: t('settings') },
+  ];
   
   return (
     <aside
@@ -46,62 +70,16 @@ export function Sidebar({ open }: SidebarProps) {
     >
       <div className="flex flex-col h-full p-4">
         <div className="flex-1 flex flex-col">
-          <NavItem
-            to="/"
-            icon={<LayoutDashboard size={20} />}
-            label="Dashboard"
-            active={isActive("/")}
-            collapsed={!open}
-          />
-          <NavItem
-            to="/analyze"
-            icon={<Search size={20} />}
-            label="Analyze"
-            active={isActive("/analyze")}
-            collapsed={!open}
-          />
-          <NavItem
-            to="/farming"
-            icon={<Leaf size={20} />}
-            label="Farming"
-            active={isActive("/farming")}
-            collapsed={!open}
-          />
-          <NavItem
-            to="/twitter"
-            icon={<Twitter size={20} />}
-            label="Twitter Agent"
-            active={isActive("/twitter")}
-            collapsed={!open}
-          />
-          <NavItem
-            to="/airdrops"
-            icon={<Gift size={20} />}
-            label="Airdrop Explorer"
-            active={isActive("/airdrops")}
-            collapsed={!open}
-          />
-          <NavItem
-            to="/saved"
-            icon={<Bookmark size={20} />}
-            label="Saved Projects"
-            active={isActive("/saved")}
-            collapsed={!open}
-          />
-          <NavItem
-            to="/notifications"
-            icon={<Bell size={20} />}
-            label="Notifications"
-            active={isActive("/notifications")}
-            collapsed={!open}
-          />
-          <NavItem
-            to="/settings"
-            icon={<Settings size={20} />}
-            label="Settings"
-            active={isActive("/settings")}
-            collapsed={!open}
-          />
+          {navItems.map((item) => (
+            <NavItem
+              key={item.to}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              active={isActive(item.to)}
+              collapsed={!open}
+            />
+          ))}
         </div>
       </div>
     </aside>
