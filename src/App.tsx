@@ -12,6 +12,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { XPProvider } from "@/context/XPContext";
+import { TutorialProvider } from "@/context/TutorialContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Analyze from "./pages/Analyze";
@@ -27,6 +28,7 @@ import NotFound from "./pages/NotFound";
 import { OutOfCreditsModal } from "@/components/ui/OutOfCreditsModal";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useAuth } from "@/context/AuthContext";
+import { TutorialOverlay } from "@/components/common/TutorialOverlay";
 
 // Route Guard for protected routes
 const ProtectedRoute = () => {
@@ -93,48 +95,52 @@ const App = () => {
           <ThemeProvider>
             <NotificationProvider>
               <XPProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <BrowserRouter>
-                    <Routes>
-                      {/* Landing page route */}
-                      <Route 
-                        path="/" 
-                        element={
-                          <PageLayout>
-                            <Home />
-                          </PageLayout>
-                        } 
-                      />
-                      
-                      {/* Protected dashboard routes */}
-                      <Route element={<ProtectedRoute />}>
-                        <Route element={<DashboardLayout />}>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/analyze" element={<Analyze />} />
-                          <Route path="/farming" element={<Farming />} />
-                          <Route path="/twitter" element={<TwitterAgent />} />
-                          <Route path="/airdrops" element={<Airdrops />} />
-                          <Route path="/portfolio" element={<Portfolio />} />
-                          <Route path="/screener" element={<Screener />} />
-                          <Route path="/referral" element={<Referral />} />
-                          <Route path="/topup" element={<TopUp />} />
+                <TutorialProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <Routes>
+                        {/* Landing page route */}
+                        <Route 
+                          path="/" 
+                          element={
+                            <PageLayout>
+                              <Home />
+                            </PageLayout>
+                          } 
+                        />
+                        
+                        {/* Protected dashboard routes */}
+                        <Route element={<ProtectedRoute />}>
+                          <Route element={<DashboardLayout />}>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/analyze" element={<Analyze />} />
+                            <Route path="/farming" element={<Farming />} />
+                            <Route path="/twitter" element={<TwitterAgent />} />
+                            <Route path="/airdrops" element={<Airdrops />} />
+                            <Route path="/portfolio" element={<Portfolio />} />
+                            <Route path="/screener" element={<Screener />} />
+                            <Route path="/referral" element={<Referral />} />
+                            <Route path="/topup" element={<TopUp />} />
+                          </Route>
                         </Route>
-                      </Route>
+                        
+                        <Route path="/404" element={<NotFound />} />
+                        <Route path="*" element={<Navigate to="/404" replace />} />
+                      </Routes>
                       
-                      <Route path="/404" element={<NotFound />} />
-                      <Route path="*" element={<Navigate to="/404" replace />} />
-                    </Routes>
-                    
-                    <OutOfCreditsModal 
-                      isOpen={showCreditsModal}
-                      onClose={() => setShowCreditsModal(false)}
-                      onTopUp={handleTopUp}
-                      onReferral={handleReferral}
-                    />
-                  </BrowserRouter>
-                </TooltipProvider>
+                      <TutorialOverlay />
+                      
+                      <OutOfCreditsModal 
+                        isOpen={showCreditsModal}
+                        onClose={() => setShowCreditsModal(false)}
+                        onTopUp={handleTopUp}
+                        onReferral={handleReferral}
+                      />
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </TutorialProvider>
               </XPProvider>
             </NotificationProvider>
           </ThemeProvider>

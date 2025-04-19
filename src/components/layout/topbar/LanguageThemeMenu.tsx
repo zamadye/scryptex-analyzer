@@ -14,12 +14,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
-import { useTutorial } from "@/context/TutorialContext";
 
 export const LanguageThemeMenu = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { startTutorial } = useTutorial();
+  
+  // Create a safe tutorial context hook
+  const useSafeTutorial = () => {
+    try {
+      // Dynamic import to avoid the error when the TutorialContext isn't available
+      const { useTutorial } = require("@/context/TutorialContext");
+      return useTutorial();
+    } catch (error) {
+      // Return a dummy object with the required methods if TutorialContext is not available
+      return {
+        startTutorial: () => console.log("Tutorial not available")
+      };
+    }
+  };
+  
+  const { startTutorial } = useSafeTutorial();
 
   return (
     <DropdownMenu>
