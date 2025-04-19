@@ -1,14 +1,14 @@
-
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/cardui";
-import { Badge } from "@/components/ui/badge";
-import { Twitter } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface Tweet {
   id: string;
   content: string;
   time: string;
-  status: 'scheduled' | 'posted';
+  status: string;
 }
 
 interface TweetQueueProps {
@@ -18,58 +18,45 @@ interface TweetQueueProps {
 }
 
 export function TweetQueue({ tweets, userName, userHandle }: TweetQueueProps) {
-  const { t } = useLanguage();
+  const [scheduledTweets, setScheduledTweets] = useState(tweets);
+  const { toast } = useToast();
+
+  const handleDeleteTweet = (id: string) => {
+    const updatedTweets = scheduledTweets.filter(tweet => tweet.id !== id);
+    setScheduledTweets(updatedTweets);
+    
+    // Update the toast call to use a single object argument
+    toast({
+      title: "Tweet Deleted",
+      description: "The scheduled tweet has been deleted."
+    });
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('scheduledTweets')}</CardTitle>
-        <CardDescription>
-          {tweets.length > 0 
-            ? t('scheduledTweetsCount', { count: tweets.length }) 
-            : t('noScheduledTweets')}
-        </CardDescription>
+        <CardTitle>Scheduled Tweets</CardTitle>
+        <CardDescription>Manage your scheduled tweets</CardDescription>
       </CardHeader>
       <CardContent>
-        {tweets.length > 0 ? (
+        {scheduledTweets.length === 0 ? (
+          <p className="text-gray-500">No tweets scheduled.</p>
+        ) : (
           <div className="space-y-4">
-            {tweets.map((tweet) => (
-              <div 
-                key={tweet.id} 
-                className="p-4 rounded-lg border border-gray-200"
-              >
-                <div className="flex items-start">
-                  <div className="bg-gray-200 h-10 w-10 rounded-full flex-shrink-0 mr-3" />
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center">
-                          <p className="font-semibold">{userName}</p>
-                          <p className="text-gray-500 ml-2 text-sm">{userHandle}</p>
-                        </div>
-                        <p className="my-2">{tweet.content}</p>
-                      </div>
-                      <Badge 
-                        variant={tweet.status === 'posted' ? "secondary" : "outline"}
-                        className={tweet.status === 'posted' ? "bg-green-100 text-green-800" : ""}
-                      >
-                        {tweet.status === 'posted' ? t('posted') : t('scheduled')}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">
-                      {tweet.status === 'posted' 
-                        ? `${t('postedOn')} ${new Date(tweet.time).toLocaleString()}`
-                        : `${t('scheduledFor')} ${new Date(tweet.time).toLocaleString()}`}
-                    </div>
+            {scheduledTweets.map((tweet) => (
+              <div key={tweet.id} className="border rounded-md p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium">{userName} <span className="text-gray-500">{userHandle}</span></p>
+                    <p className="text-sm text-gray-500">{new Date(tweet.time).toLocaleString()}</p>
+                    <p className="mt-2">{tweet.content}</p>
                   </div>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteTweet(tweet.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             ))}
-          </div>
-        ) : (
-          <div className="py-8 text-center">
-            <Twitter className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">{t('noScheduledTweetsYet')}</p>
           </div>
         )}
       </CardContent>

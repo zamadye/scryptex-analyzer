@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreditStatusBadge } from "@/components/ui/CreditStatusBadge";
 import { OutOfCreditsModal } from "@/components/ui/OutOfCreditsModal";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CreditPanelProps {
   className?: string;
@@ -30,10 +31,34 @@ export const CreditPanel = ({ className }: CreditPanelProps) => {
     }
   }, [credits]);
 
+  // Listen for changes to credits from other components
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newCredits = localStorage.getItem('userCredits');
+      if (newCredits) {
+        setCredits(parseInt(newCredits));
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Simulate credit usage (for demo purposes)
   const useCredit = (amount = 1) => {
     if (credits >= amount) {
       setCredits(credits - amount);
+      
+      // Record usage in credit history
+      const transactions = JSON.parse(localStorage.getItem('creditTransactions') || '[]');
+      transactions.push({
+        type: 'use',
+        credits: amount,
+        date: new Date().toISOString(),
+        action: 'AI Action'
+      });
+      localStorage.setItem('creditTransactions', JSON.stringify(transactions));
+      
       return true;
     } else {
       setShowModal(true);
@@ -50,9 +75,23 @@ export const CreditPanel = ({ className }: CreditPanelProps) => {
     const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
     localStorage.setItem('freeCreditsExpiry', expiryTime.toString());
     
-    toast({
+    // Record free credit in history
+    const transactions = JSON.parse(localStorage.getItem('creditTransactions') || '[]');
+    transactions.push({
+      type: 'topup',
+      credits: 1,
+      date: new Date().toISOString(),
+      package: 'Free Daily',
+      method: 'System'
+    });
+    localStorage.setItem('creditTransactions', JSON.stringify(transactions));
+    
+    // Force UI update across components
+    window.dispatchEvent(new Event('storage'));
+    
+    useToast().toast({
       title: "Free Credit Added",
-      description: "You've received 1 free daily credit!",
+      description: "You've received 1 free daily credit!"
     });
   };
 
@@ -68,7 +107,18 @@ export const CreditPanel = ({ className }: CreditPanelProps) => {
 
   return (
     <div className={className}>
-      <CreditStatusBadge credits={credits} onCreditExpire={handleCreditExpire} />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="cursor-pointer" onClick={() => navigate("/topup")}>
+              <CreditStatusBadge credits={credits} onCreditExpire={handleCreditExpire} />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Each action consumes credits. Top up now.</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       
       <OutOfCreditsModal 
         isOpen={showModal}
@@ -89,6 +139,16 @@ export const CreditManager = {
     if (currentCredits >= amount) {
       const newCredits = currentCredits - amount;
       localStorage.setItem('userCredits', newCredits.toString());
+      
+      // Record usage in credit history
+      const transactions = JSON.parse(localStorage.getItem('creditTransactions') || '[]');
+      transactions.push({
+        type: 'use',
+        credits: amount,
+        date: new Date().toISOString(),
+        action: 'AI Action'
+      });
+      localStorage.setItem('creditTransactions', JSON.stringify(transactions));
       
       // Force UI update across components
       window.dispatchEvent(new Event('storage'));

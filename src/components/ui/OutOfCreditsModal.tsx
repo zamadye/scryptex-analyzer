@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";  // Using the shadcn/ui button component
+import { Button } from "@/components/ui/button";
 
 interface OutOfCreditsModalProps {
   isOpen: boolean;
@@ -20,25 +20,25 @@ export function OutOfCreditsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Kredit Habis</DialogTitle>
+          <DialogTitle>Out of Credits</DialogTitle>
           <DialogDescription>
-            Anda telah menggunakan semua kredit yang tersedia. Isi ulang kredit untuk terus menggunakan fitur Scryptex.
+            You have used all your available credits. Top up to continue using Scryptex features.
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 space-y-4">
           <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
-            <h4 className="text-sm font-medium text-amber-800">Tips:</h4>
+            <h4 className="text-sm font-medium text-amber-800">Tip:</h4>
             <p className="text-sm text-amber-700 mt-1">
-              Dapatkan kredit gratis dengan mengundang teman menggunakan kode referral Anda.
+              Get free credits by inviting friends using your referral code.
             </p>
           </div>
         </div>
         <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
           <Button variant="outline" onClick={onReferral} className="w-full sm:w-auto">
-            Undang Teman
+            Invite Friends
           </Button>
           <Button onClick={onTopUp} className="w-full sm:w-auto">
-            Top Up Kredit
+            Top Up Credits
           </Button>
         </DialogFooter>
       </DialogContent>
