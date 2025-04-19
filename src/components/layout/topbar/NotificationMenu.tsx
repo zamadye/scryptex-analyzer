@@ -7,7 +7,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-  DropdownMenuFooter,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,11 +74,14 @@ export const NotificationMenu = () => {
               </DropdownMenuItem>
             ))}
 
-            <DropdownMenuFooter className="text-center pt-2">
-              <Link to="/notifications" className="text-blue-600 text-sm hover:underline">
+            <div className="text-center py-2 border-t">
+              <Link 
+                to="/notifications" 
+                className="text-blue-600 text-sm hover:underline"
+              >
                 {t('viewAllNotifications')}
               </Link>
-            </DropdownMenuFooter>
+            </div>
           </>
         ) : (
           <div className="p-4 text-center text-gray-500">
