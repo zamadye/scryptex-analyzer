@@ -56,8 +56,7 @@ export default function Notifications() {
             onClick={() => {
               markAllAsRead();
               toast({
-                title: t('notificationsMarkedAsRead'),
-                description: ''
+                title: t('notificationsMarkedAsRead')
               });
             }}
           >
@@ -69,8 +68,7 @@ export default function Notifications() {
             onClick={() => {
               clearNotifications();
               toast({
-                title: t('notificationsCleared'),
-                description: ''
+                title: t('notificationsCleared')
               });
             }}
           >
