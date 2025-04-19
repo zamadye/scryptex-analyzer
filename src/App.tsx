@@ -4,15 +4,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import { TutorialProvider } from "@/context/TutorialContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { XPProvider } from "@/context/XPContext";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Analyze from "./pages/Analyze";
 import Autopilot from "./pages/Autopilot";
@@ -23,11 +23,37 @@ import Portfolio from "./pages/Portfolio";
 import Screener from "./pages/Screener";
 import Referral from "./pages/Referral";
 import TopUp from "./pages/TopUp";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import { OutOfCreditsModal } from "@/components/ui/OutOfCreditsModal";
-import { TutorialOverlay } from "@/components/common/TutorialOverlay";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { useAuth } from "@/context/AuthContext";
+
+// Route Guard for protected routes
+const ProtectedRoute = () => {
+  const { isLoggedIn } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const location = useLocation();
+  
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setShowAuthModal(true);
+    }
+  }, [isLoggedIn, location]);
+  
+  if (!isLoggedIn) {
+    return (
+      <>
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)} 
+        />
+        <Outlet />
+      </>
+    );
+  }
+  
+  return <Outlet />;
+};
 
 const App = () => {
   const [queryClient] = useState(() => new QueryClient());
@@ -67,49 +93,48 @@ const App = () => {
           <ThemeProvider>
             <NotificationProvider>
               <XPProvider>
-                <TutorialProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
-                      <Routes>
-                        <Route element={
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <Routes>
+                      {/* Landing page route */}
+                      <Route 
+                        path="/" 
+                        element={
                           <PageLayout>
-                            <Outlet />
+                            <Home />
                           </PageLayout>
-                        }>
-                          <Route path="/login" element={<Login />} />
-                          <Route path="/signup" element={<Signup />} />
-                        </Route>
-                        
+                        } 
+                      />
+                      
+                      {/* Protected dashboard routes */}
+                      <Route element={<ProtectedRoute />}>
                         <Route element={<DashboardLayout />}>
-                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/dashboard" element={<Dashboard />} />
                           <Route path="/analyze" element={<Analyze />} />
                           <Route path="/farming" element={<Farming />} />
                           <Route path="/twitter" element={<TwitterAgent />} />
                           <Route path="/airdrops" element={<Airdrops />} />
-                          <Route path="/saved" element={<Portfolio />} />
-                          <Route path="/notifications" element={<Screener />} />
-                          <Route path="/settings" element={<Referral />} />
-                          <Route path="/topup" element={<TopUp />} />
+                          <Route path="/portfolio" element={<Portfolio />} />
+                          <Route path="/screener" element={<Screener />} />
                           <Route path="/referral" element={<Referral />} />
+                          <Route path="/topup" element={<TopUp />} />
                         </Route>
-                        
-                        <Route path="/404" element={<NotFound />} />
-                        <Route path="*" element={<Navigate to="/404" replace />} />
-                      </Routes>
+                      </Route>
                       
-                      <OutOfCreditsModal 
-                        isOpen={showCreditsModal}
-                        onClose={() => setShowCreditsModal(false)}
-                        onTopUp={handleTopUp}
-                        onReferral={handleReferral}
-                      />
-
-                      <TutorialOverlay />
-                    </BrowserRouter>
-                  </TooltipProvider>
-                </TutorialProvider>
+                      <Route path="/404" element={<NotFound />} />
+                      <Route path="*" element={<Navigate to="/404" replace />} />
+                    </Routes>
+                    
+                    <OutOfCreditsModal 
+                      isOpen={showCreditsModal}
+                      onClose={() => setShowCreditsModal(false)}
+                      onTopUp={handleTopUp}
+                      onReferral={handleReferral}
+                    />
+                  </BrowserRouter>
+                </TooltipProvider>
               </XPProvider>
             </NotificationProvider>
           </ThemeProvider>

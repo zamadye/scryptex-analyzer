@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, User, Settings, CreditCard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,32 +47,24 @@ export const UserMenu = () => {
         
         <DropdownMenuSeparator />
         
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>{t('activeProjects')}</DropdownMenuLabel>
-          {user?.analyzedProjects?.length ? (
-            user.analyzedProjects.slice(0, 3).map((project, index) => (
-              <DropdownMenuItem key={index}>
-                {project}
-              </DropdownMenuItem>
-            ))
-          ) : (
-            <DropdownMenuItem disabled>
-              {t('noActiveProjects')}
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuGroup>
-        
-        <DropdownMenuSeparator />
-        
         <DropdownMenuItem asChild>
-          <Link to="/referral">
-            {t('referral')}
+          <Link to="/topup" className="flex items-center">
+            <CreditCard className="mr-2 h-4 w-4" />
+            {t('topup')}
           </Link>
         </DropdownMenuItem>
         
         <DropdownMenuItem asChild>
-          <Link to="/topup">
-            {t('topup')}
+          <Link to="/settings" className="flex items-center">
+            <User className="mr-2 h-4 w-4" />
+            {t('profile')}
+          </Link>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem asChild>
+          <Link to="/settings" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            {t('settings')}
           </Link>
         </DropdownMenuItem>
         

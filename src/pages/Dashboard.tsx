@@ -21,6 +21,25 @@ export default function Dashboard() {
         type: 'info'
       });
       
+      // Add sample activity notifications
+      setTimeout(() => {
+        addNotification({
+          title: t('walletConnected'),
+          message: t('walletConnectedMessage'),
+          type: 'success'
+        });
+      }, 2000);
+      
+      setTimeout(() => {
+        if (user.analyzedProjects && user.analyzedProjects.length > 0) {
+          addNotification({
+            title: t('analysisDone'),
+            message: `${t('analysisDoneMessage')} ${user.analyzedProjects[0]}`,
+            type: 'info'
+          });
+        }
+      }, 4000);
+      
       const credits = localStorage.getItem('userCredits');
       if (credits && parseInt(credits) < 5) {
         setTimeout(() => {
@@ -29,7 +48,7 @@ export default function Dashboard() {
             message: t('visitTopupPage'),
             type: 'warning'
           });
-        }, 3000);
+        }, 6000);
       }
     }
   }, [isLoggedIn, user, t, addNotification]);
