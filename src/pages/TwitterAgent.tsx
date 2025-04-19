@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Twitter, Send, ArrowRight, Clock, Check, AlertCircle, ThumbsUp, Repeat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +27,6 @@ export default function TwitterAgent() {
   const [scheduledTweets, setScheduledTweets] = useState<any[]>([]);
   const [currentTab, setCurrentTab] = useState("tweet");
   
-  // New features for restoring functionality
   const [autoLike, setAutoLike] = useState(true);
   const [autoRetweet, setAutoRetweet] = useState(true);
   const [interactionFrequency, setInteractionFrequency] = useState([2]); // Per day
@@ -42,12 +40,10 @@ export default function TwitterAgent() {
       return;
     }
     
-    // Simulate Twitter connection
     setIsTwitterConnected(true);
     const defaultHandle = user?.name?.replace(/\s+/g, '') || 'user';
     setTwitterHandle(`@${defaultHandle.toLowerCase()}`);
     
-    // Update user with Twitter handle
     if (user) {
       updateUser({ twitterHandle: `@${defaultHandle.toLowerCase()}` });
     }
@@ -63,11 +59,9 @@ export default function TwitterAgent() {
     
     setIsGenerating(true);
     
-    // Simulate API call
     setTimeout(() => {
       setIsGenerating(false);
       
-      // Generate sample tweet
       const tweets = [
         `Just explored the amazing features of ${projectName} (${projectTwitter})! Their innovative approach to solving scalability issues is impressive. Can't wait to see what's next! #Web3 #Blockchain`,
         `Excited about the future of ${projectName} (${projectTwitter})! Their roadmap looks promising and the team is solid. Definitely a project to watch in the coming months. #Crypto #DeFi`,
@@ -76,7 +70,6 @@ export default function TwitterAgent() {
       
       setTweetContent(tweets[Math.floor(Math.random() * tweets.length)]);
       
-      // Update user's tweeted projects
       if (user) {
         const updatedProjects = [...(user.tweetedProjects || [])];
         if (!updatedProjects.includes(projectName)) {
@@ -110,10 +103,9 @@ export default function TwitterAgent() {
     
     toast({
       title: t('tweetScheduled'),
-      description: `Your tweet will be posted in ${tweetDelay[0]} hours.`,
+      description: `Your tweet will be posted in ${tweetDelay[0]} hours.`
     });
     
-    // Simulate tweet posting
     setTimeout(() => {
       const updatedTweets = scheduledTweets.map(tweet => 
         tweet.id === newTweet.id ? { ...tweet, status: 'posted' } : tweet
@@ -122,9 +114,9 @@ export default function TwitterAgent() {
       
       toast({
         title: t('tweetPosted'),
-        description: t('tweetPostedSuccessfully'),
+        description: t('tweetPostedSuccessfully')
       });
-    }, 5000); // For demo purposes, show as posted after 5 seconds
+    }, 5000);
   };
   
   const configureFarming = () => {
@@ -133,7 +125,6 @@ export default function TwitterAgent() {
       description: `Will auto-interact with ${targetAccounts} ${interactionFrequency[0]} times per day.`,
     });
     
-    // Simulate some interactions
     setTimeout(() => {
       toast({
         title: t('interactionComplete'),

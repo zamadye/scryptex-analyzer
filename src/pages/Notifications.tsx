@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/context/NotificationContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Bell, Check, Clock, AlertCircle, Search, Leaf, Twitter } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";  // Ensure correct import
 
 export default function Notifications() {
   const { notifications, markAllAsRead, clearNotifications } = useNotifications();
   const { t } = useLanguage();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const { toast } = useToast();  // Get toast method correctly
   
   const filteredNotifications = notifications.filter((notification) => {
     if (filter === 'unread') return !notification.read;
@@ -52,14 +54,24 @@ export default function Notifications() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => markAllAsRead()}
+            onClick={() => {
+              markAllAsRead();
+              toast({
+                title: t('notificationsMarkedAsRead')
+              });  // Fixed: Single argument
+            }}
           >
             {t('markAllAsRead')}
           </Button>
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => clearNotifications()}
+            onClick={() => {
+              clearNotifications();
+              toast({
+                title: t('notificationsCleared')
+              });  // Fixed: Single argument
+            }}
           >
             {t('clearAll')}
           </Button>
