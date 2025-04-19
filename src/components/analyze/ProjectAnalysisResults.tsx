@@ -3,10 +3,16 @@ import { FileText, Users, BarChart, Map as RoadMap, Wallet } from "@/components/
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export function ProjectAnalysisResults() {
+type FetcherType = "tokenomics" | "roadmap" | "backers" | "social" | "airdrop" | null;
+
+interface ProjectAnalysisResultsProps {
+  activeFetcher: FetcherType;
+}
+
+export function ProjectAnalysisResults({ activeFetcher }: ProjectAnalysisResultsProps) {
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="about">
+      <Tabs defaultValue="about" value={activeFetcher || "about"}>
         <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="about" className="flex items-center">
             <FileText className="mr-2 h-4 w-4" />
