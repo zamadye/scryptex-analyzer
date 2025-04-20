@@ -42,3 +42,4 @@ export const UIText = {
     farmingInProgress: "🚜 Farming in Progress",
   }
 };
+
