@@ -12,32 +12,32 @@ export const FeatureSection = () => {
   
   const features = [
     {
-      title: t('analyzeAgent'),
-      description: t('analyzeAgentLongDesc'),
-      icon: <BarChart className="h-12 w-12 text-scryptex-blue" />,
+      title: "Analyze Projects with AI",
+      description: "Our advanced AI scans on-chain data, socials, and tokenomics to provide in-depth project analysis and airdrop potential score.",
+      icon: <BarChart className="h-12 w-12 text-blue-500" />,
       color: "bg-blue-50",
       image: "/media/analyze-agent.png",
       path: "/analyze"
     },
     {
-      title: t('twitterAgent'),
-      description: t('twitterAgentLongDesc'),
+      title: "Auto Retweet for Twitter XP",
+      description: "Configure automated Twitter engagement to maximize airdrop eligibility while you sleep. Smart filtering ensures you only engage with quality content.",
       icon: <Twitter className="h-12 w-12 text-sky-500" />,
       color: "bg-sky-50",
       image: "/media/twitter-agent.png",
       path: "/twitter"
     },
     {
-      title: t('farmingAgent'),
-      description: t('farmingAgentLongDesc'),
+      title: "Testnet Farming Automation",
+      description: "Deploy farming agents across multiple testnets simultaneously. Our wallet connector makes cross-chain interactions seamless.",
       icon: <Wallet className="h-12 w-12 text-green-500" />,
       color: "bg-green-50",
       image: "/media/farming-agent.png",
       path: "/farming"
     },
     {
-      title: t('airdropExplorer'),
-      description: t('airdropExplorerLongDesc'),
+      title: "Airdrop Portfolio Visualization",
+      description: "Track all your airdrop farming activity in one dashboard with estimated value projections and completion status.",
       icon: <Gift className="h-12 w-12 text-purple-500" />,
       color: "bg-purple-50",
       image: "/media/explorer-agent.png",
@@ -46,11 +46,14 @@ export const FeatureSection = () => {
   ];
 
   return (
-    <section className="py-20 px-4 bg-white" id="features">
+    <section className="py-24 px-4 bg-gray-50" id="features">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-16">{t('aiAgentsAtYourCommand')}</h2>
+        <h2 className="text-4xl font-bold text-center mb-6">Key Features</h2>
+        <p className="text-xl text-gray-600 text-center max-w-3xl mx-auto mb-16">
+          Advanced tools to maximize your airdrop hunting efficiency
+        </p>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Feature tabs for mobile */}
           <div className="lg:hidden flex overflow-x-auto space-x-2 pb-4 mb-4">
             {features.map((feature, index) => (
@@ -90,8 +93,8 @@ export const FeatureSection = () => {
               <h3 className="text-2xl font-bold mb-4">{features[activeFeature].title}</h3>
               <p className="text-gray-600 mb-6">{features[activeFeature].description}</p>
               <Link to={features[activeFeature].path}>
-                <Button className="group">
-                  {t('exploreTool')}
+                <Button className="group bg-blue-500 hover:bg-blue-600">
+                  Explore Feature
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -99,7 +102,7 @@ export const FeatureSection = () => {
           </div>
           
           {/* Right side - Feature image */}
-          <div className="order-1 lg:order-2 rounded-lg overflow-hidden shadow-lg border border-gray-200">
+          <div className="order-1 lg:order-2 rounded-lg overflow-hidden shadow-lg border border-gray-200 bg-white p-4">
             {features.map((feature, index) => (
               <div 
                 key={`img-${feature.title}`}
@@ -107,7 +110,7 @@ export const FeatureSection = () => {
                   activeFeature === index ? 'opacity-100' : 'opacity-0 hidden'
                 }`}
               >
-                <div className="aspect-video w-full bg-gray-100 flex items-center justify-center">
+                <div className="aspect-video w-full bg-gray-50 flex items-center justify-center rounded-lg overflow-hidden">
                   {feature.image ? (
                     <img 
                       src={feature.image} 

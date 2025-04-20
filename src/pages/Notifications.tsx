@@ -1,176 +1,220 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/cardui";
-import { Button } from "@/components/ui/button";
-import { useNotifications } from "@/context/NotificationContext";
-import { useLanguage } from "@/context/LanguageContext";
-import { Bell, Check, Clock, AlertCircle, Search, Leaf, Twitter } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  Bell,
+  CheckCircle,
+  Info,
+  AlertTriangle,
+  X,
+  XCircle,
+} from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/context/LanguageContext";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/cardui";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
 
-export default function Notifications() {
-  const { notifications, markAllAsRead, clearNotifications } = useNotifications();
+const Notifications = () => {
   const { t } = useLanguage();
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const { isLoggedIn } = useAuth();
   const { toast } = useToast();
+  const [notifications, setNotifications] = useState([
+    {
+      id: "1",
+      type: "info",
+      message: t("welcomeToScryptex"),
+      timestamp: new Date(),
+      read: false,
+    },
+    {
+      id: "2",
+      type: "success",
+      message: t("firstAirdropClaimed"),
+      timestamp: new Date(),
+      read: false,
+    },
+    {
+      id: "3",
+      type: "warning",
+      message: t("lowCreditsWarning"),
+      timestamp: new Date(),
+      read: false,
+    },
+    {
+      id: "4",
+      type: "error",
+      message: t("twitterAccountSuspended"),
+      timestamp: new Date(),
+      read: false,
+    },
+    {
+      id: "5",
+      type: "info",
+      message: t("newFeatureAvailable"),
+      timestamp: new Date(),
+      read: false,
+    },
+    {
+      id: "6",
+      type: "success",
+      message: t("farmingAgentDeployed"),
+      timestamp: new Date(),
+      read: false,
+    },
+    {
+      id: "7",
+      type: "warning",
+      message: t("portfolioAlert"),
+      timestamp: new Date(),
+      read: false,
+    },
+    {
+      id: "8",
+      type: "error",
+      message: t("failedTransaction"),
+      timestamp: new Date(),
+      read: false,
+    },
+  ]);
 
-  const filteredNotifications = notifications.filter((notification) => {
-    if (filter === 'unread') return !notification.read;
-    if (filter === 'read') return notification.read;
-    return true;
-  });
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setNotifications([]);
+    }
+  }, [isLoggedIn]);
 
-  const getNotificationIcon = (type: string) => {
+  const markAsRead = (id: string) => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
+    );
+    toast({
+      title: "Notification marked as read",
+      description: "The notification has been successfully marked as read",
+    });
+  };
+
+  const markAllAsRead = () => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((notification) => ({ ...notification, read: true }))
+    );
+    toast({
+      title: "All notifications marked as read",
+      description: "All notifications have been marked as read",
+    });
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+    toast({
+      title: "Notifications cleared",
+      description: "All notifications have been cleared from your inbox",
+    });
+  };
+
+  const getIcon = (type: string) => {
     switch (type) {
-      case 'success':
-        return <Check className="h-5 w-5 text-green-500" />;
-      case 'warning':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-      case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+      case "success":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case "error":
+        return <XCircle className="h-4 w-4 text-red-500" />;
       default:
-        return <Bell className="h-5 w-5 text-blue-500" />;
+        return <Info className="h-4 w-4 text-blue-500" />;
     }
   };
 
-  const getActionIcon = (title: string) => {
-    if (title.toLowerCase().includes('analyze') || title.toLowerCase().includes('project')) {
-      return <Search className="h-4 w-4 text-blue-500" />;
-    }
-    if (title.toLowerCase().includes('farm') || title.toLowerCase().includes('task')) {
-      return <Leaf className="h-4 w-4 text-green-500" />;
-    }
-    if (title.toLowerCase().includes('tweet') || title.toLowerCase().includes('twitter')) {
-      return <Twitter className="h-4 w-4 text-sky-500" />;
-    }
-    return <Bell className="h-4 w-4 text-gray-500" />;
-  };
+  const unreadCount = notifications.filter(
+    (notification) => !notification.read
+  ).length;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-3xl font-bold">{t('notifications')}</h1>
-        
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => {
-              markAllAsRead();
-              toast({
-                title: t('notificationsMarkedAsRead'),
-                description: t('notificationsMarkedAsReadDescription')
-              });
-            }}
-          >
-            {t('markAllAsRead')}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => {
-              clearNotifications();
-              toast({
-                title: t('notificationsCleared'),
-                description: t('notificationsClearedDescription')
-              });
-            }}
-          >
-            {t('clearAll')}
-          </Button>
-        </div>
-      </div>
-      
-      <div className="flex space-x-2 mb-4">
-        <Button 
-          variant={filter === 'all' ? "default" : "outline"} 
-          size="sm"
-          onClick={() => setFilter('all')}
-        >
-          {t('all')}
-        </Button>
-        <Button 
-          variant={filter === 'unread' ? "default" : "outline"} 
-          size="sm"
-          onClick={() => setFilter('unread')}
-        >
-          {t('unread')}
-        </Button>
-        <Button 
-          variant={filter === 'read' ? "default" : "outline"} 
-          size="sm"
-          onClick={() => setFilter('read')}
-        >
-          {t('read')}
-        </Button>
-      </div>
-      
+    <div className="container py-8">
       <Card>
-        <CardHeader>
-          <CardTitle>{t('allNotifications')}</CardTitle>
-          <CardDescription>
-            {filteredNotifications.length > 0 
-              ? t('youHaveXNotifications', { count: filteredNotifications.length }) 
-              : t('noNotifications')}
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-2xl font-bold">
+            <Bell className="mr-2 h-5 w-5 inline-block align-middle" />
+            {t("notifications")}
+          </CardTitle>
+          <div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={markAllAsRead}
+              disabled={notifications.length === 0}
+              className="mr-2"
+            >
+              {t("markAllRead")}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={clearAllNotifications}
+              disabled={notifications.length === 0}
+            >
+              {t("clearAll")}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          {filteredNotifications.length > 0 ? (
-            <div className="space-y-4">
-              {filteredNotifications.map((notification) => (
-                <div 
-                  key={notification.id} 
-                  className={`p-4 rounded-lg border ${
-                    notification.read ? 'bg-white border-gray-200' : 'bg-blue-50 border-blue-100'
-                  }`}
-                >
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        {getNotificationIcon(notification.type)}
-                      </div>
-                    </div>
-                    <div className="flex-grow">
-                      <div className="flex justify-between items-start">
-                        <h3 className={`font-medium ${!notification.read ? 'text-blue-600' : ''}`}>
-                          {notification.title}
-                        </h3>
-                        <span className="text-xs text-gray-500 flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {new Date(notification.timestamp).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 mt-1">{notification.message}</p>
-                      
-                      <div className="flex justify-between items-center mt-3">
-                        <span className="text-xs text-gray-500">
-                          {new Date(notification.timestamp).toLocaleDateString()}
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded-full bg-gray-100 flex items-center">
-                          {getActionIcon(notification.title)}
-                          <span className="ml-1">
-                            {notification.title.toLowerCase().includes('analyze') ? 'Analysis' : 
-                             notification.title.toLowerCase().includes('farm') ? 'Farming' :
-                             notification.title.toLowerCase().includes('tweet') ? 'Twitter' :
-                             'System'}
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {notifications.length === 0 ? (
+            <div className="text-center py-6">
+              <CardDescription>{t("noNotifications")}</CardDescription>
             </div>
           ) : (
-            <div className="py-8 text-center">
-              <Bell className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">{t('noNotificationsToShow')}</p>
-            </div>
+            <ScrollArea className="h-[400px] w-full rounded-md pr-4">
+              <div className="space-y-4">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="relative rounded-md border p-4"
+                  >
+                    {!notification.read && (
+                      <Badge className="absolute top-2 right-2">
+                        {t("unread")}
+                      </Badge>
+                    )}
+                    <div className="flex items-start space-x-4">
+                      {getIcon(notification.type)}
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {notification.message}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(notification.timestamp, {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Mark as read</span>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </CardContent>
       </Card>
     </div>
   );
-}
+};
+
+export default Notifications;
