@@ -1,6 +1,5 @@
 
 import { useLanguage } from "@/context/LanguageContext";
-import Image from 'next/image';
 
 export const TrustSection = () => {
   const { t } = useLanguage();
