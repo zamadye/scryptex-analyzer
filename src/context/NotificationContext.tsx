@@ -32,6 +32,11 @@ export const useNotifications = () => {
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [lastNotification, setLastNotification] = useState<{
+    title: string;
+    message: string;
+    timestamp: number;
+  } | null>(null);
   
   // Load notifications from localStorage on mount
   useEffect(() => {
@@ -49,16 +54,33 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
   
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    const now = Date.now();
+    
+    // Prevent duplicate notifications within 3 seconds
+    if (
+      lastNotification && 
+      lastNotification.title === notification.title && 
+      lastNotification.message === notification.message &&
+      now - lastNotification.timestamp < 3000
+    ) {
+      return; // Skip this notification as it's a duplicate
+    }
+    
     const newNotification: Notification = {
       ...notification,
-      id: Date.now().toString(),
+      id: now.toString(),
       timestamp: new Date().toISOString(),
       read: false,
     };
     
     setNotifications(prev => [newNotification, ...prev]);
+    setLastNotification({
+      title: notification.title,
+      message: notification.message,
+      timestamp: now
+    });
     
-    // Show toast for new notification
+    // Show toast for new notification, auto-dismiss after 3 seconds
     toast({
       title: notification.title,
       description: notification.message,

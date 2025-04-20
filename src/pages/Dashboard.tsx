@@ -15,41 +15,50 @@ export default function Dashboard() {
   
   useEffect(() => {
     if (isLoggedIn && user) {
+      // Welcome notification - only send once on initial load
       addNotification({
-        title: `${t('welcome')}, ${user.name}!`,
+        title: `${t('welcome')}, ${user.name}! 👋`,
         message: t('welcomeToDashboard'),
         type: 'info'
       });
       
-      // Add sample activity notifications
-      setTimeout(() => {
+      // Add sample activity notifications with delays to avoid flooding
+      const timeoutIds: NodeJS.Timeout[] = [];
+      
+      timeoutIds.push(setTimeout(() => {
         addNotification({
-          title: t('walletConnected'),
+          title: `✅ ${t('walletConnected')}`,
           message: t('walletConnectedMessage'),
           type: 'success'
         });
-      }, 2000);
+      }, 2000));
       
-      setTimeout(() => {
-        if (user.analyzedProjects && user.analyzedProjects.length > 0) {
+      if (user.analyzedProjects && user.analyzedProjects.length > 0) {
+        timeoutIds.push(setTimeout(() => {
           addNotification({
-            title: t('analysisDone'),
+            title: `🔍 ${t('analysisDone')}`,
             message: `${t('analysisDoneMessage')} ${user.analyzedProjects[0]}`,
             type: 'info'
           });
-        }
-      }, 4000);
+        }, 4000));
+      }
       
       const credits = localStorage.getItem('userCredits');
       if (credits && parseInt(credits) < 5) {
-        setTimeout(() => {
+        timeoutIds.push(setTimeout(() => {
           addNotification({
-            title: t('creditLow'),
+            title: `⚠️ ${t('creditLow')}`,
             message: t('visitTopupPage'),
             type: 'warning'
           });
-        }, 6000);
+        }, 6000));
       }
+      
+      // Cleanup timeouts on unmount to prevent notifications
+      // if user navigates away quickly
+      return () => {
+        timeoutIds.forEach(id => clearTimeout(id));
+      };
     }
   }, [isLoggedIn, user, t, addNotification]);
 

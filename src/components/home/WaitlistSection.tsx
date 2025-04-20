@@ -8,13 +8,20 @@ export const WaitlistSection = () => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent multiple rapid submissions
+    const now = Date.now();
+    if (now - lastSubmitTime < 3000) {
+      return;
+    }
+    
     if (!email) {
       toast({
-        title: "Email is required",
+        title: "⚠️ Email is required",
         description: "Please enter your email address to join the waitlist",
         variant: "destructive",
       });
@@ -22,11 +29,12 @@ export const WaitlistSection = () => {
     }
     
     setIsSubmitting(true);
+    setLastSubmitTime(now);
     
     // Simulate API call
     setTimeout(() => {
       toast({
-        title: "Successfully joined waitlist!",
+        title: "✅ Successfully joined waitlist!",
         description: "We'll notify you when Scryptex is ready for you",
       });
       setEmail("");
