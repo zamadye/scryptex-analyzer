@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/cardui";
 import { Button } from "@/components/ui/button";
@@ -41,10 +42,11 @@ export const AgentCard = ({ id, name, icon, description, lastUsed, path }: Agent
       <CardFooter className="pt-0">
         <Link to={path} className="w-full">
           <Button className="w-full">
-            {t('activate')}
+            Activate Agent
           </Button>
         </Link>
       </CardFooter>
     </Card>
   );
 };
+
